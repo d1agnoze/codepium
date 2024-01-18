@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useEffect, useState } from "react";
 
 const CopyIcon = () => (
   <svg
@@ -36,6 +37,22 @@ const CheckIcon = () => (
 );
 
 export default function Code({ code }: { code: string }) {
+  const supabase = createClientComponentClient()
+  useEffect(() => {
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log(event);
+      if (event == "PASSWORD_RECOVERY") {
+        const newPassword = prompt("What would you like your new password to be?");
+        if (newPassword) { 
+          const { data, error } = await supabase.auth.updateUser({
+            password: newPassword,
+          })
+          if (data) alert("Password updated successfully!")
+          if (error) alert("There was an error updating your password.")
+        }
+      }
+    })
+  }, [])
   const [icon, setIcon] = useState(CopyIcon);
 
   const copy = async () => {
