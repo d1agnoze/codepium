@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-background text-foreground">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <main className="min-h-screen flex flex-col">
-            <div className="navbar bg-base-100">
+            <div className="navbar bg-card">
               <div className="flex-1">
                 <a className="btn btn-ghost text-xl">Codepium</a>
               </div>

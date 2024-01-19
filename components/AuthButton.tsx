@@ -6,10 +6,7 @@ import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 
 export default async function AuthButton() {
   const cookieStore = cookies();
-  const supabase = createServerComponentClient({cookies: () => cookieStore});
-
-  console.log(await supabase.auth.getUser());
-  
+  const supabase = createServerComponentClient({ cookies: () => cookieStore });
   const {
     data: { user },
   } = await supabase.auth.getUser();
