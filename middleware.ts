@@ -1,5 +1,4 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createClient } from "@/utils/supabase/middleware";
 import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 
 export async function middleware(req: NextRequest) {
@@ -7,6 +6,13 @@ export async function middleware(req: NextRequest) {
     const res = NextResponse.next()
     const supabase = createMiddlewareClient({ req, res })
     await supabase.auth.getSession()
+    const { data: { user } } = await supabase.auth.getUser()
+    const { data, error } = await supabase.rpc('check_user_step')
+    if (user && !error && data !== 2 && req.nextUrl.pathname !== '/onboarding') {
+      req.nextUrl.pathname = '/onboarding'
+      return NextResponse.redirect(req.nextUrl)
+    }
+
     return res
   } catch (e) {
     return NextResponse.next({

@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 
 const useFetchCurrent = (url: string) => {
-    const urlBase = `http://localhost:3000/api/${url}`
-    const [data, setData] = useState<unknown>({});
+    const urlBase = `/api/${url}`
+    const [data, setData] = useState<any>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 

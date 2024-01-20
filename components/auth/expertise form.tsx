@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react";
+import { useOptimistic, useEffect, useState } from "react";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { cn } from "@/lib/utils";
@@ -7,20 +7,32 @@ import { Button } from "../ui/button";
 import useFetchCurrent from "@/hooks/fetch";
 import Skeleton from "react-loading-skeleton";
 import { useRouter } from "next/navigation";
-export default function ExpertiseForm({ callback }: { callback: (formData: FormData) => Promise<void> }) {
+import { setExpertise } from "@/app/onboarding/actions";
+import { useFormState } from "react-dom";
+import { toast } from "react-toastify";
+export default function ExpertiseForm() {
     const { data, error, loading } = useFetchCurrent('general/expertises')
     const [selected, setSelected] = useState<string[]>([])
     const [columns, setColumns] = useState<string[]>([])
     const router = useRouter()
     const itemsPerColumn = 10
+    const [state, formAction] = useFormState(setExpertise, initialState)
     useEffect(() => {
         if (data) {
             {/*@ts-ignore*/ }
             setColumns(Array.from({ length: Math.ceil(data.length / itemsPerColumn) }, (_, index) => data.slice(index * itemsPerColumn, (index + 1) * itemsPerColumn)))
         }
         if (error)
-            router.replace('/error')
+            router.push('/error')
     }, [data, error])
+    useEffect(() => {
+        if (!state.ok)
+            toast.error(state.message)
+        if (state.ok && state.message !== '') {
+            toast.success(state.message)
+            router.push('/')
+        }
+    }, [state])
 
     return (<div className="w-full min-h-max">
         {loading ?
@@ -55,13 +67,16 @@ export default function ExpertiseForm({ callback }: { callback: (formData: FormD
                     </div> || <Skeleton count={2} />}
                 </CardContent>
                 <CardFooter className="flex flex-row-reverse">
-                    <form action={callback} onSubmit={(event) => console.log(event)
+                    <form action={formAction} onSubmit={(event) => console.log(event)
                     }>
                         <input type="hidden" name="data" value={JSON.stringify(selected)} />
                         <Button type="submit" className="hover:bg-accent font-bold">All set? Let's GOOO😆</Button>
                     </form>
                 </CardFooter>
             </Card>}
-
     </div>);
+}
+const initialState: MessageObject = {
+    message: '',
+    ok: true
 }

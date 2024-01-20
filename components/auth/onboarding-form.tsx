@@ -3,7 +3,6 @@ import * as z from "zod"
 import { Textarea } from "../ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button"
 import {
     Form,
     FormControl,
@@ -14,7 +13,8 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-
+import { SubmitButton } from "../SubmitButton";
+import { formSchema } from "@/schemas/create-use.schema";
 const OnboardingForm = ({ callback }: { callback: (formData: FormData) => Promise<void> }) => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema)
@@ -37,7 +37,7 @@ const OnboardingForm = ({ callback }: { callback: (formData: FormData) => Promis
 
                 <FormField control={form.control} name="displayName" render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Username</FormLabel>
+                        <FormLabel>Display Name</FormLabel>
                         <FormControl>
                             <Input placeholder="your display name" {...field} />
                         </FormControl>
@@ -57,24 +57,11 @@ const OnboardingForm = ({ callback }: { callback: (formData: FormData) => Promis
                         <FormMessage />
                     </FormItem>
                 )} />
-                <Button type="submit">Submit</Button>
+                <SubmitButton />
             </form>
         </Form>
     );
 }
 
 export default OnboardingForm;
-const formSchema = z.object({
-    username: z.string({
-        required_error: "username is required",
-        invalid_type_error: "username must be a string",
-    }),
-    displayName: z.string({
-        required_error: "display name is required",
-        invalid_type_error: "display name must be a string",
-    }),
-    about: z.string().default(''),
-    expertise: z.array(z.string(), {
-        required_error: "At least one expertise needs to be selected",
-    })
-})
+
