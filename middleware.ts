@@ -8,7 +8,7 @@ export async function middleware(req: NextRequest) {
     await supabase.auth.getSession()
     const { data: { user } } = await supabase.auth.getUser()
     const { data, error } = await supabase.rpc('check_user_step')
-    if (user && !error && data !== 2 && req.nextUrl.pathname !== '/onboarding') {
+    if (user && !error && data !== 2 && req.nextUrl.pathname !== '/onboarding' && !(req.nextUrl.pathname.includes("/api"))) {
       req.nextUrl.pathname = '/onboarding'
       return NextResponse.redirect(req.nextUrl)
     }

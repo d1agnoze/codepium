@@ -12,22 +12,19 @@ import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
 export default function ExpertiseForm() {
     const { data, error, loading } = useFetchCurrent('general/expertises')
-    const [selected, setSelected] = useState<string[]>([])
-    const [columns, setColumns] = useState<string[]>([])
+    const [selected, setSelected] = useState<Expertise[]>([])
+    const [columns, setColumns] = useState<Expertise[]>([])
     const router = useRouter()
     const itemsPerColumn = 10
     const [state, formAction] = useFormState(setExpertise, initialState)
     useEffect(() => {
         if (data) {
-            {/*@ts-ignore*/ }
             setColumns(Array.from({ length: Math.ceil(data.length / itemsPerColumn) }, (_, index) => data.slice(index * itemsPerColumn, (index + 1) * itemsPerColumn)))
         }
-        if (error)
-            router.push('/error')
+        if (error) router.push('/error')
     }, [data, error])
     useEffect(() => {
-        if (!state.ok)
-            toast.error(state.message)
+        if (!state.ok) toast.error(state.message)
         if (state.ok && state.message !== '') {
             toast.success(state.message)
             router.push('/')
@@ -44,21 +41,21 @@ export default function ExpertiseForm() {
                 <CardContent>
                     {<div className="flex flex-col gap-3">
                         <ul>
-                            {selected.map((item) => (<li key={item} className="inline ml-2">
-                                <Badge className="bg-accent" onClick={() => setSelected(selected.filter(expertis => expertis != item))}>{item}</Badge>
+                            {selected.map((item) => (<li key={item.id} className="inline ml-2">
+                                <Badge className="bg-accent" onClick={() => setSelected(selected.filter(expertis => expertis.id != item.id))}>{item.display_name}</Badge>
                             </li>))}
                         </ul>
                         <div className="flex flex-wrap gap-6">
                             {columns.map((column, columnIndex) => (
                                 <ul key={columnIndex} className="column">
                                     {/**@ts-ignore */}
-                                    {column.map((item, index) => (
-                                        <li key={index}>
+                                    {column.map((item) => (
+                                        <li key={item.id}>
                                             <Badge className={cn("cursor-pointer text-sm", selected.includes(item) && "hidden")} onClick={() => {
                                                 if (!selected.includes(item)) {
                                                     setSelected([...selected, item])
                                                 }
-                                            }}>{item}</Badge>
+                                            }}>{item.display_name}</Badge>
                                         </li>
                                     ))}
                                 </ul>
@@ -69,7 +66,7 @@ export default function ExpertiseForm() {
                 <CardFooter className="flex flex-row-reverse">
                     <form action={formAction} onSubmit={(event) => console.log(event)
                     }>
-                        <input type="hidden" name="data" value={JSON.stringify(selected)} />
+                        <input type="hidden" name="data" value={JSON.stringify(selected.map(item => item.id))} />
                         <Button type="submit" className="hover:bg-accent font-bold">All set? Let's GOOO😆</Button>
                     </form>
                 </CardFooter>

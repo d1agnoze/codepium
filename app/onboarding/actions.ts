@@ -3,14 +3,18 @@
 import { formSchema } from "@/schemas/create-use.schema";
 import Supabase from "@/utils/supabase/route-handler";
 
-export async function addMetadata(formData: FormData): Promise<MessageObject> {
+export async function addMetadata(prevState: any, formData: FormData): Promise<MessageObject> {
+    console.log(formData.get('username'));
+
     const validate = formSchema.safeParse({
         about: formData.get('about') ? formData.get('about') : '',
-        user_name: formData.get('username'),
-        display_name: formData.get('displayName'),
+        username: formData.get('username'),
+        displayName: formData.get('displayName'),
     })
-    if (!validate.success)
-        return { message: "Bad request", ok: false }
+    if (!validate.success) {
+        const err = validate.error.errors.map(item => item.message).toString()
+        return { message: "Bad request: " + err, ok: false }
+    }
 
     const supabase = Supabase()
     const user = (await supabase.auth.getUser()).data.user!
@@ -28,13 +32,11 @@ export async function addMetadata(formData: FormData): Promise<MessageObject> {
 
 
 export async function setExpertise(prevState: any, formData: FormData): Promise<MessageObject> {
-    if (formData.get('data') != null) {
-        const selected = JSON.parse(formData.get('data')?.toString()!)
-        console.log(selected);
-        if (selected.length == 0) {
-            return { message: "You cannot empty your expertise!", ok: false }
-        }
-        return { message: "Expertise confirmed", ok: true }
-    }
-    return { message: "Bad request", ok: false }
+    if (formData.get('data') == null) return { message: "Bad request", ok: false }
+    const selected: string[] = JSON.parse(formData.get('data')?.toString()!)
+    if (selected.length == 0) return { message: "You cannot empty your expertise!", ok: false }
+    const { error } = await Supabase().rpc('update_expertise', { id_arr: selected })
+    console.log(error);
+    if (error) return { message: 'Update operation failed', ok: false }
+    return { message: "Expertise confirmed", ok: true }
 }
