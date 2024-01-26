@@ -10,46 +10,43 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { formSchema } from "@/schemas/password-recovery.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFormState } from "react-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { confirmPasswordRecovery } from "./actions";
 import { INITIAL_MESSAGE_OBJECT } from "@/types/message.route";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { formSchema } from "@/schemas/password-reset.schema";
+import { resetPassword } from "./actions";
 import useLoading from "@/hooks/loading";
 
 export default function Page() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
+      password: "",
+      password_confirm: "",
     },
   });
   const [state, formAction] = useFormState(
-    confirmPasswordRecovery,
+    resetPassword,
     INITIAL_MESSAGE_OBJECT,
   );
-  const router = useRouter()
-  const {set_loading} = useLoading()
+  const { set_loading } = useLoading();
   function onSubmit(values: z.infer<typeof formSchema>) {
-    set_loading(true)
     const formData = new FormData();
-    formData.append("email", values.email);
+    formData.append("email", values.password);
+    set_loading(true);
     formAction(formData);
   }
+  const router = useRouter();
   useEffect(() => {
     if (state.message !== "") {
-      set_loading(false)
-      if (state.ok) {
-        toast.success(state.message);
-        router.replace("/");
-      } else {
-        toast.error(state.message);
-      }
+      set_loading(false);
+      state.ok ? toast.success(state.message) : toast.error(state.message);
+      router.push("/");
     }
   }, [state]);
   return (
@@ -59,17 +56,39 @@ export default function Page() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
-              name="email"
+              name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="someemail@email.com" {...field} />
-                    
+                    <Input
+                      type="password"
+                      autoComplete=""
+                      placeholder="******"
+                      {...field}
+                    />
                   </FormControl>
                   <FormDescription>
-                    We will send an email to you to confirm your password change
+                    Your new password
                   </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password_confirm"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password confirmation</FormLabel>
+                  <FormControl>
+                    <Input
+                      autoComplete=""
+                      type="password"
+                      placeholder="******"
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

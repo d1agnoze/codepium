@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingProvider from "@/components/Loading";
+import Link from "next/link";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -50,7 +51,7 @@ export default function RootLayout(
             <main className="min-h-screen flex flex-col">
               <div className="navbar bg-card">
                 <div className="flex-1">
-                  <a className="btn btn-ghost text-xl">Codepium</a>
+                  <Link className="btn btn-ghost text-xl" href={'/'}>Codepium</Link>
                 </div>
                 <div className="flex-none gap-2">
                   <div className="form-control max-sm:hidden">

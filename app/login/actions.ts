@@ -2,6 +2,7 @@
 
 import { DEFAULT_SITE } from "@/defaults/site";
 import { authSchema } from "@/schemas/auth-login.schema";
+import { MessageObject } from "@/types/message.route";
 import Supabase from "@/utils/supabase/server-action";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
