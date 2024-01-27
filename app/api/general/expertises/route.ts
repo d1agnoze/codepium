@@ -5,10 +5,7 @@ import { NextResponse } from "next/server"
 export async function GET() {
     const cookieStore = cookies()
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
-    const { data, error } = await supabase.from('Expertise').select(`display_name`)
-    if (!error) {
-        const res = data.map(item => item.display_name)
-        return Response.json(res)
-    }
-    return NextResponse.error()
+    const { data, error } = await supabase.from('Expertise').select(`id, display_name`)
+    if (error)  return NextResponse.error()
+    return Response.json(data)
 }

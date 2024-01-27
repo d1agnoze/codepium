@@ -1,19 +1,20 @@
-"use client"
-import { useState } from "react";
+"use client";
+import {
+  hideLoading,
+  loadingService,
+  showLoading,
+} from "@/utils/loading.service";
 
 const useLoading = () => {
-    const [isVisible, setIsVisible] = useState(false);
-
-    const toggle_loading = () => {
-        setIsVisible((prevVisible) => !prevVisible);
-    };
-    const set_loading = (value: boolean) => {
-        setIsVisible(value);
-    }
-    return {
-        isVisible,
-        toggleVisibility: toggle_loading,
-        set_loading
-    };
+  const toggle_loading = () => {
+    loadingService.getValue() ? hideLoading() : showLoading();
+  };
+  const set_loading = (value: boolean) => {
+    value ? showLoading() : hideLoading();
+  };
+  return {
+    toggleVisibility: toggle_loading,
+    set_loading,
+  };
 };
 export default useLoading;

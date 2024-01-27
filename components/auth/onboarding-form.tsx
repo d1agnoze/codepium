@@ -15,13 +15,32 @@ import {
 import { Input } from "@/components/ui/input"
 import { SubmitButton } from "../SubmitButton";
 import { formSchema } from "@/schemas/create-use.schema";
-const OnboardingForm = ({ callback }: { callback: (formData: FormData) => Promise<void> }) => {
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema)
-    })
+import { useFormState } from "react-dom";
+import { addMetadata } from "@/app/onboarding/actions";
+import { useEffect, useOptimistic } from "react";
+import { stat } from "fs";
+import { toast } from "react-toastify";
+import useLoading from "@/hooks/loading";
+import { redirect, useRouter } from "next/navigation";
+
+const OnboardingForm = () => {
+    const form = useForm<z.infer<typeof formSchema>>({ resolver: zodResolver(formSchema) })
+    const [state, formAction] = useFormState(addMetadata, initState)
+    const {toggleVisibility} = useLoading()
+    const router = useRouter()
+    useEffect(() => {
+        if (state.message !== '' && state.ok) toast.success(state.message)
+        if (state.message !== '' && !state.ok) toast.error(state.message)
+    }, [state])
+    const submitForm = async (formData: FormData) => {
+        toggleVisibility()
+        await formAction(formData)
+        toggleVisibility()
+        redirect('/onboarding')
+    }
     return (
         <Form {...form}>
-            <form action={callback} className="space-y-8">
+            <form action={submitForm} className="space-y-8">
                 <FormField control={form.control} name="username" render={({ field }) => (
                     <FormItem>
                         <FormLabel>Username</FormLabel>
@@ -65,3 +84,7 @@ const OnboardingForm = ({ callback }: { callback: (formData: FormData) => Promis
 
 export default OnboardingForm;
 
+const initState: MessageObject = {
+    message: '',
+    ok: true
+}

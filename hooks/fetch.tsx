@@ -17,6 +17,7 @@ const useFetchCurrent = (url: string) => {
                 const result = await response.json();
                 setData(result);
             } catch (error: any) {
+                console.log(error);
                 setError(error?.message);
             } finally {
                 setLoading(false);
