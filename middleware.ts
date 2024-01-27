@@ -16,6 +16,10 @@ export async function middleware(req: NextRequest) {
       req.nextUrl.pathname = '/onboarding'
       return NextResponse.redirect(req.nextUrl)
     }
+    if(user && !error && req.nextUrl.pathname === '/login'){
+      req.nextUrl.pathname = ''
+      return NextResponse.redirect(req.nextUrl)
+    }
 
     return res
   } catch (e) {

@@ -18,7 +18,7 @@ export default function AuthButton() {
   const router = useRouter();
   useEffect(() => {
     const supabase = createClientComponentClient();
-    supabase.auth.getUser().then((data) => setLog(data.data.user));
+    supabase.auth.getUser().then((data) => { setLog(data.data.user); });
   }, []);
   const onSubmit = () => {
     set_loading(true);
@@ -40,7 +40,7 @@ export default function AuthButton() {
               sha256(log!.email!.trim().toLowerCase())
             }?d=${encodeURIComponent(DEFAULT_AVATAR)}&s=100`}
           />
-          <AvatarFallback>U</AvatarFallback>
+          <AvatarFallback>{log.email?.charAt(0)}</AvatarFallback>
         </Avatar>
         <form action={onSubmit}>
           <button className="py-2 px-4 rounded-md no-underline bg-btn-background hover:bg-btn-background-hover">

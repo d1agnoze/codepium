@@ -6,10 +6,7 @@ import React from "react";
 const LoadingProvider = () => {
   const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
-    console.log(isLoading);
-    const sub = loadingService.subscribe((value) => {
-      setIsLoading(value);
-    });
+    const sub = loadingService.subscribe((value) => { setIsLoading(value); });
     return () => sub.unsubscribe();
   }, []);
   return (
