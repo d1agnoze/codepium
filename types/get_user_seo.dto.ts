@@ -5,5 +5,6 @@ export type get_user_seo = {
   display_name: string,
   about: string,
   background_image: string,
+  email: string,
 };
 //to get Date object: new Date()

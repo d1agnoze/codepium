@@ -21,27 +21,28 @@ export default async function Page() {
     email_col.length === 0
   ) return notFound();
   const user = (data as get_user_seo[]).at(0);
+  if (user) user.email = email_col.at(0).email.trim().toLowerCase();
   return (
-    <div className="flex flex-col justify-center">
+    <div className="flex flex-col justify-center box-border px-2">
       <div className="w-full md:h-[24vh] max-sm:h-[20dvh] max-sm:mb-6 md:mb-8 overflow-hidden relative">
         <Image
           src={user!.background_image}
           fill={true}
-          className="z-0"
+          className="z-0 rounded-lg"
           priority={true}
           alt="user's background image"
         />
-        <div className="absolute bottom-0 left-5 z-10 flex gap-3 items-center">
+        <div className="absolute bottom-3 left-5 z-10 flex gap-3 items-center">
           <Avatar className="w-28 h-28 border-white border-2">
             <AvatarImage
-              src={`https://gravatar.com/avatar/${
-                sha256(email_col.at(0).email.trim().toLowerCase())
-              }?d=${encodeURIComponent(DEFAULT_AVATAR)}&s=100`}
+              src={`https://gravatar.com/avatar/${sha256(user!.email)}?d=${
+                encodeURIComponent(DEFAULT_AVATAR)
+              }&s=100`}
               alt="@shadcn"
             />
             <AvatarFallback>{user?.user_name.charAt(0)}</AvatarFallback>
           </Avatar>
-          <Card className="py-4 pl-5 pr-8 bg-transparent border-0 hover:bg-secondary hover:border-1 transition cursor-default">
+          <Card className="py-2 pl-5 pr-8 border-0 bg-hslvar transition cursor-default">
             <CardTitle>{user?.display_name}</CardTitle>
             <CardDescription>@{user?.user_name}</CardDescription>
           </Card>
