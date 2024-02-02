@@ -6,6 +6,7 @@ import { DEFAULT_AVATAR } from "@/defaults/profile";
 import { get_user_seo } from "@/types/get_user_seo.dto";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { sha256 } from "js-sha256";
+import { PanelRightOpen } from "lucide-react";
 import { cookies } from "next/headers";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -50,6 +51,12 @@ export default async function Page() {
       </div>
       <div className="container">
         {user?.user_name}
+        <label
+          htmlFor="drawer"
+          className="btn bg-transparent hover:bg-hslvar drawer-button lg:hidden"
+        >
+          <PanelRightOpen />
+        </label>
       </div>
     </div>
   );

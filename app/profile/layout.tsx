@@ -16,7 +16,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="drawer-content flex flex-col">
           {children}
         </div>
-        <div className="drawer-side ml-2">
+        <div className="drawer-side ml-2 z-30">
           <label
             htmlFor="drawer"
             aria-label="close sidebar"
