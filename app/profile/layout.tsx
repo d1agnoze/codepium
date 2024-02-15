@@ -7,6 +7,7 @@ import {
   UserRound,
 } from "lucide-react";
 import Link from "next/link";
+import '@mdxeditor/editor/style.css'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -27,7 +28,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {/* Sidebar content here */}
             <li>
               <Link
-                href={"/profile/"}
+                href={"/profile/create"}
                 className="flex flex-col justify-center items-center border-1"
               >
                 <PlusSquare />
