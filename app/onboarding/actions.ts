@@ -1,6 +1,7 @@
 "use server"
 
 import { formSchema } from "@/schemas/create-use.schema";
+import { MessageObject } from "@/types/message.route";
 import Supabase from "@/utils/supabase/route-handler";
 
 export async function addMetadata(prevState: any, formData: FormData): Promise<MessageObject> {

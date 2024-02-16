@@ -1,4 +1,3 @@
-"use client";
 // InitializedMDXEditor.tsx
 import { type ForwardedRef, useEffect } from "react";
 import {
@@ -9,6 +8,7 @@ import {
   ConditionalContents,
   CreateLink,
   diffSourcePlugin,
+  DiffSourceToggleWrapper,
   headingsPlugin,
   imagePlugin,
   InsertCodeBlock,
@@ -23,20 +23,40 @@ import {
   thematicBreakPlugin,
   toolbarPlugin,
   UndoRedo,
-  DiffSourceToggleWrapper,
 } from "@mdxeditor/editor";
 import { useTheme } from "next-themes";
 
 // Only import this to the next file
 export default function InitializedMDXEditor({
   editorRef,
+  id,
+  type,
   ...props
-}: { editorRef: ForwardedRef<MDXEditorMethods> | null } & MDXEditorProps) {
+}: {
+  editorRef: ForwardedRef<MDXEditorMethods> | null;
+  imageUploadHandler?: (file: File) => string;
+  id: string;
+  type: "question" | "post";
+} & MDXEditorProps) {
   const { theme } = useTheme();
 
   useEffect(() => {
     console.log(theme);
   }, []);
+  async function imageUploadHandler(image: File) {
+    const formData = new FormData();
+    formData.append("file", image);
+    formData.append("thread_id", id);
+    formData.append("type", type);
+    // send the file to your server and return
+    // the URL of the uploaded image in the response
+    const response = await fetch("/api/general/upload", {
+      method: "POST",
+      body: formData,
+    });
+    const json = (await response.json()) as { url: string };
+    return json.url;
+  }
   return (
     <MDXEditor
       className={`${theme !== "dark" ? "" : "dark-theme custom-style"}`}
@@ -47,12 +67,16 @@ export default function InitializedMDXEditor({
               <BoldItalicUnderlineToggles />
               <CreateLink />
               <ConditionalContents
-                options={[ {
-                    when: (editor) => editor?.editorType === "codeblock",
-                    contents: () => <ChangeCodeMirrorLanguage />,
-                  },
-                  { fallback: () => ( <> <InsertCodeBlock /> </>), },
-                ]}
+                options={[{
+                  when: (editor) => editor?.editorType === "codeblock",
+                  contents: () => <ChangeCodeMirrorLanguage />,
+                }, {
+                  fallback: () => (
+                    <>
+                      <InsertCodeBlock />
+                    </>
+                  ),
+                }]}
               />
               <DiffSourceToggleWrapper>
                 <UndoRedo />
@@ -65,7 +89,7 @@ export default function InitializedMDXEditor({
         headingsPlugin(),
         linkPlugin(),
         linkDialogPlugin(),
-        imagePlugin({imageUploadHandler}),
+        imagePlugin({ imageUploadHandler }),
         thematicBreakPlugin(),
         codeBlockPlugin({ defaultCodeBlockLanguage: "js" }),
         codeMirrorPlugin({
@@ -81,16 +105,4 @@ export default function InitializedMDXEditor({
       ref={editorRef}
     />
   );
-}
-async function imageUploadHandler(image: File) {
-  const formData = new FormData()
-  formData.append('image', image)
-  // send the file to your server and return
-  // the URL of the uploaded image in the response
-  const response = await fetch('/uploads/new', {
-    method: 'POST',
-    body: formData
-  })
-  const json = (await response.json()) as { url: string }
-  return json.url
 }

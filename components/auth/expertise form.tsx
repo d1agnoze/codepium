@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { setExpertise } from "@/app/onboarding/actions";
 import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
+import { MessageObject } from "@/types/message.route";
 export default function ExpertiseForm() {
     const { data, error, loading } = useFetchCurrent('general/expertises')
     const [selected, setSelected] = useState<Expertise[]>([])

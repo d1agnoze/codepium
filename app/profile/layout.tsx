@@ -23,6 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             aria-label="close sidebar"
             className="drawer-overlay"
           >
+            f
           </label>
           <ul className="rounded-md menu p-4 w-56 min-h-full bg-hslvar shadow-md">
             {/* Sidebar content here */}
