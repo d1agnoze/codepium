@@ -12,6 +12,7 @@ import {
   headingsPlugin,
   imagePlugin,
   InsertCodeBlock,
+  InsertImage,
   linkDialogPlugin,
   linkPlugin,
   listsPlugin,
@@ -25,28 +26,22 @@ import {
   UndoRedo,
 } from "@mdxeditor/editor";
 import { useTheme } from "next-themes";
+import { UploadResponse } from "@/types/upload.route";
 
 // Only import this to the next file
 export default function InitializedMDXEditor({
   editorRef,
-  id,
   type,
   ...props
 }: {
   editorRef: ForwardedRef<MDXEditorMethods> | null;
   imageUploadHandler?: (file: File) => string;
-  id: string;
   type: "question" | "post";
 } & MDXEditorProps) {
   const { theme } = useTheme();
-
-  useEffect(() => {
-    console.log(theme);
-  }, []);
   async function imageUploadHandler(image: File) {
     const formData = new FormData();
     formData.append("file", image);
-    formData.append("thread_id", id);
     formData.append("type", type);
     // send the file to your server and return
     // the URL of the uploaded image in the response
@@ -54,7 +49,7 @@ export default function InitializedMDXEditor({
       method: "POST",
       body: formData,
     });
-    const json = (await response.json()) as { url: string };
+    const json = (await response.json()) as UploadResponse;
     return json.url;
   }
   return (
@@ -66,6 +61,7 @@ export default function InitializedMDXEditor({
             <>
               <BoldItalicUnderlineToggles />
               <CreateLink />
+              <InsertImage />
               <ConditionalContents
                 options={[{
                   when: (editor) => editor?.editorType === "codeblock",

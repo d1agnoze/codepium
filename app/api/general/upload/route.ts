@@ -1,33 +1,35 @@
+import { QUESTION_IMAGE_BUCKET } from "@/defaults/storages";
+import { UploadResponse } from "@/types/upload.route";
+import {
+  BadRequest,
+  ServerError,
+  Unauthorized,
+} from "@/utils/httpStatus/utils";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 import { v1 as uuidv1 } from "uuid";
+
 export async function POST(request: NextRequest) {
   const supabase = createRouteHandlerClient({ cookies: () => cookies() });
   const formData = await request.formData();
   const { data: { user } } = await supabase.auth.getUser();
+
   //Check if user is authenticated
   if (!user) {
-    return Response.json({ message: "Upload failed: Unauthorized user" }, {
-      status: 401,
-      statusText: "Unauthorized uploading",
-    });
+    return Unauthorized({ message: "Upload failed: Unauthorized user" });
   }
 
   const file = formData.get("file") as File;
-  const thread_id = formData.get("thread_id");
   const type = formData.get("type");
 
   //check if thread_id is available
-  if (!thread_id || (type !== "question" && type !== "post")) {
-    return Response.json({ message: "Upload failed: field(s) invalid" }, {
-      status: 400,
-      statusText: "Bad Request",
-    });
+  if (type !== "question" && type !== "post") {
+    return BadRequest({ message: "Upload failed: field(s) invalid" });
   }
 
-  const filename = `${user.id}/question/${user.id}_${thread_id}_${uuidv1()}`;
-  const { error } = await supabase
+  const filename = `${user.id}/question/${user.id}_${uuidv1()}`;
+  const { data, error } = await supabase
     .storage
     .from("question_images")
     .upload(filename, file, {
@@ -35,14 +37,33 @@ export async function POST(request: NextRequest) {
       upsert: false,
     });
 
-  if (error) {
-    return Response.json({ message: "Upload failed:" + error.message }, {
-      status: 500,
-      statusText: "Internal Server Error",
-    });
+  if (error) return ServerError({ message: "Upload failed:" + error.message });
+
+  const { data: { publicUrl } } = supabase
+    .storage
+    .from(QUESTION_IMAGE_BUCKET)
+    .getPublicUrl(data.path);
+
+  return Response.json(
+    { url: publicUrl, message: "Upload Successfully" } as UploadResponse,
+    {
+      status: 200,
+      statusText: "OK",
+    },
+  );
+}
+
+// TODO: delete images if user leave the form unsubmitted
+export async function DELETE(request: NextRequest) {
+  const supabase = createRouteHandlerClient({ cookies: () => cookies() });
+  const formData = await request.formData();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  //Check if user is authenticated
+  if (!user) {
+    return Unauthorized({ message: "Upload failed: Unauthorized user" });
   }
-  return Response.json({ message: "Success" }, {
-    status: 200,
-    statusText: "Upload Successfully",
-  });
+
+
+  return Response.json({}, { status: 200, statusText: "OK" });
 }

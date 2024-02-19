@@ -71,7 +71,6 @@ export default function QuestionForm() {
                 <FormControl>
                   <ForwardRefEditor
                     type="question"
-                    id={"" /** TODO: create id later **/}
                     onChange={field.onChange}
                     onBlur={field.onBlur}
                     ref={ref}

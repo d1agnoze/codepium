@@ -15,11 +15,13 @@ const Editor = dynamic(() => import("./InitializedMDXEditor"), {
 // to accept other props, including a ref.
 interface CustomMDXEditorProps extends MDXEditorProps {
   type: "question" | "post";
-  id: string;
 }
-export const ForwardRefEditor = forwardRef<MDXEditorMethods, CustomMDXEditorProps>((
+export const ForwardRefEditor = forwardRef<
+  MDXEditorMethods,
+  CustomMDXEditorProps
+>((
   props,
   ref,
-) => <Editor {...props} editorRef={ref} type={props.type} id={props.id} />);
+) => <Editor {...props} editorRef={ref} type={props.type} />);
 // TS complains without the following line
 ForwardRefEditor.displayName = "ForwardRefEditor ";
