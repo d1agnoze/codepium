@@ -1,7 +1,7 @@
 "use client";
 
 import { hideLoading } from "@/utils/loading.service";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ForwardRefEditor } from "../md-editor/ForwardRefEditor";
 import "@mdxeditor/editor/style.css";
 import { MDXEditorMethods } from "@mdxeditor/editor";
@@ -21,6 +21,7 @@ import { z } from "zod";
 import { questionSchema } from "@/schemas/question-submit.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ExpertiseSelector from "../ExpertiseSelector";
+import { MDHelper } from "@/helpers/markdown/MDhelper";
 
 export default function QuestionForm() {
   const ref = useRef<MDXEditorMethods>(null);
@@ -34,6 +35,14 @@ export default function QuestionForm() {
   });
   useEffect(() => {
     hideLoading();
+    return () => {
+      if (!form.formState.isSubmitted && form.formState.dirtyFields.content) {
+        if (window.confirm("Do you really want to leave?")) {
+          const unsaved: string[] = MDHelper.extractImageLinks(form.getValues("content"));
+          console.log("Touched:", unsaved);
+        }
+      }
+    };
   }, []);
   const submit = (values: z.infer<typeof questionSchema>) => {
     console.log(values);

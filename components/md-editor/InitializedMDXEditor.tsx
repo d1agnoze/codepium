@@ -1,5 +1,5 @@
 // InitializedMDXEditor.tsx
-import { type ForwardedRef, useEffect } from "react";
+import { type ForwardedRef } from "react";
 import {
   BoldItalicUnderlineToggles,
   ChangeCodeMirrorLanguage,
@@ -54,7 +54,8 @@ export default function InitializedMDXEditor({
   }
   return (
     <MDXEditor
-      className={`${theme !== "dark" ? "" : "dark-theme custom-style"}`}
+      className={`${theme !== "dark" ? "" : "dark-theme"}`}
+      contentEditableClassName="custom-style"
       plugins={[
         toolbarPlugin({
           toolbarContents: () => (
