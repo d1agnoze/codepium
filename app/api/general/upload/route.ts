@@ -1,7 +1,10 @@
 import { QUESTION_IMAGE_BUCKET } from "@/defaults/storages";
+import { ThreadMode, threadModeChecker } from "@/enums/thread-modes.enum";
+import { SupabaseHelper } from "@/helpers/supabase/supabaseHelper";
 import { UploadResponse } from "@/types/upload.route";
 import {
   BadRequest,
+  OK,
   ServerError,
   Unauthorized,
 } from "@/utils/httpStatus/utils";
@@ -53,17 +56,36 @@ export async function POST(request: NextRequest) {
   );
 }
 
-// TODO: delete images if user leave the form unsubmitted
 export async function DELETE(request: NextRequest) {
   const supabase = createRouteHandlerClient({ cookies: () => cookies() });
   const formData = await request.formData();
+  const type = formData.get("type")?.toString().trim().toLowerCase();
   const { data: { user } } = await supabase.auth.getUser();
+  const images = formData.get("images")?.toString();
 
   //Check if user is authenticated
   if (!user) {
     return Unauthorized({ message: "Upload failed: Unauthorized user" });
   }
 
+  //Check if field are valid
+  if (!images || images!.trim() === "" || !type || threadModeChecker(type)) {
+    return BadRequest({ message: "Invalid delete request" });
+  }
 
-  return Response.json({}, { status: 200, statusText: "OK" });
+  const req: string[] = JSON.parse(images);
+  const res: string[] = SupabaseHelper.getImagePath(req, "question_images");
+
+  const bucket = `${
+    type === ThreadMode.post as string
+      ? ThreadMode.post.toString()
+      : ThreadMode.question.toString()
+  }_images`;
+
+  const { error } = await supabase.storage.from(bucket).remove(res);
+
+  //return error if unable to delete images
+  if (error) return BadRequest({ message: "Invalid delete request" });
+
+  return OK({});
 }

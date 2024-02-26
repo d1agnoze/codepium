@@ -30,7 +30,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             className="drawer-overlay"
           >
           </label>
-          <ul className="rounded-md menu p-4 w-56 min-h-full bg-hslvar shadow-md">
+          <ul className="rounded-md menu p-4 w-56 min-h-full bg-hslvar shadow-md max-md:pt-20">
             {/* Sidebar content here */}
             <li>
               <Link
