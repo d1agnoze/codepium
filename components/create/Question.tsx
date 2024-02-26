@@ -21,6 +21,8 @@ import { z } from "zod";
 import { questionSchema } from "@/schemas/question-submit.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ExpertiseSelector from "../ExpertiseSelector";
+import { MDHelper } from "@/helpers/markdown/MDhelper";
+import { ThreadMode } from "@/enums/thread-modes.enum";
 
 export default function QuestionForm() {
   const ref = useRef<MDXEditorMethods>(null);
@@ -34,6 +36,28 @@ export default function QuestionForm() {
   });
   useEffect(() => {
     hideLoading();
+    return () => {
+      if (!form.formState.isSubmitted && form.formState.dirtyFields.content) {
+        if (window.confirm("Do you really want to leave?")) {
+          const unsaved: string[] = MDHelper.extractImageLinks(
+            form.getValues("content"),
+          );
+          if (unsaved.length > 0) {
+            const formData = new FormData();
+            formData.append("type", ThreadMode.question.toString());
+            formData.append("images", JSON.stringify(unsaved));
+
+            fetch("/api/general/upload", {
+              method: "DELETE",
+              body: formData,
+            }).then((res) => {
+              if (!res.ok) throw new Error(res.statusText);
+            })
+              .catch((err) => console.log(err));
+          }
+        }
+      }
+    };
   }, []);
   const submit = (values: z.infer<typeof questionSchema>) => {
     console.log(values);
@@ -90,6 +114,7 @@ export default function QuestionForm() {
                 <FormDescription>
                   Select expertises that related to your question
                 </FormDescription>
+                <FormMessage />
                 <FormControl>
                   <ExpertiseSelector
                     value={(arg) => {
@@ -98,7 +123,6 @@ export default function QuestionForm() {
                     }}
                   />
                 </FormControl>
-                <FormMessage />
               </FormItem>
             )}
           />

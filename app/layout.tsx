@@ -50,7 +50,7 @@ export default function RootLayout(
             </div>
             <main className="min-h-screen flex flex-col">
               <div className="navbar bg-card">
-                <div className="flex-1">
+                <div className="flex-1 max-md:flex-row-reverse">
                   <Link className="btn btn-ghost text-xl" href={'/'}>Codepium</Link>
                 </div>
                 <div className="flex-none gap-2">

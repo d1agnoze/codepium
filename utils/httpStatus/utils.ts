@@ -1,3 +1,5 @@
+import { fail } from "assert";
+
 export const BadRequest = (obj?: Object) => {
   const res = obj
     ? obj
@@ -36,4 +38,8 @@ export const ServerError = (obj?: Object) => {
     status: 500,
     statusText: "Internal Server Error",
   });
+};
+export const OK = (obj?: Object) => {
+  const res = obj ? obj : { message: "Success" };
+  return Response.json({ ...res }, { status: 200, statusText: "OK" });
 };

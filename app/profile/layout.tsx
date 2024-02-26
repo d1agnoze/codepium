@@ -2,6 +2,7 @@ import {
   BarChart3,
   Book,
   MessageCircleQuestion,
+  PanelRightOpen,
   PlusSquare,
   Settings,
   UserRound,
@@ -15,17 +16,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <div className="drawer lg:drawer-open">
         <input id="drawer" type="checkbox" className="drawer-toggle" />
         <div className="drawer-content flex flex-col">
+          <label htmlFor="drawer" className="drawer-button lg:hidden 
+            max-sm:absolute top-[-2.8rem] left-1
+            " >
+            <PanelRightOpen size={"1.7rem"} />
+          </label>
           {children}
         </div>
-        <div className="drawer-side ml-2 z-30">
+        <div className="drawer-side md:ml-2 z-30">
           <label
             htmlFor="drawer"
             aria-label="close sidebar"
             className="drawer-overlay"
           >
-            f
           </label>
-          <ul className="rounded-md menu p-4 w-56 min-h-full bg-hslvar shadow-md">
+          <ul className="rounded-md menu p-4 w-56 min-h-full bg-hslvar shadow-md max-md:pt-20">
             {/* Sidebar content here */}
             <li>
               <Link
