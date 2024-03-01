@@ -1,6 +1,6 @@
 "use client";
 
-import { hideLoading } from "@/utils/loading.service";
+import { hideLoading, showLoading } from "@/utils/loading.service";
 import { useEffect, useRef } from "react";
 import { ForwardRefEditor } from "../md-editor/ForwardRefEditor";
 import "@mdxeditor/editor/style.css";
@@ -23,9 +23,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import ExpertiseSelector from "../ExpertiseSelector";
 import { MDHelper } from "@/helpers/markdown/MDhelper";
 import { ThreadMode } from "@/enums/thread-modes.enum";
+import { createQuestion } from "./actions";
+import { INITIAL_MESSAGE_OBJECT } from "@/types/message.route";
+import { useFormState } from "react-dom";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 export default function QuestionForm() {
   const ref = useRef<MDXEditorMethods>(null);
+  const router = useRouter();
+  const [state, formAction] = useFormState(
+    createQuestion,
+    INITIAL_MESSAGE_OBJECT,
+  );
   const form = useForm<z.infer<typeof questionSchema>>({
     resolver: zodResolver(questionSchema),
     defaultValues: {
@@ -59,9 +69,29 @@ export default function QuestionForm() {
       }
     };
   }, []);
+
+  /** INFO: Handle server side response */
+  useEffect(() => {
+    if (state.message.trim() != "" && !state.ok) {
+      toast.error(state.message);
+      router.replace("/");
+    }
+    if (state.message.trim() != "" && state.ok) {
+      console.log(state.message);
+      router.replace("/question/" + state.message);
+      toast.success("Question submitted");
+    }
+  }, [state]);
+
   const submit = (values: z.infer<typeof questionSchema>) => {
-    console.log(values);
+    const form = new FormData();
+    form.append("title", values.title);
+    form.append("content", values.content);
+    form.append("expertises", JSON.stringify(values.expertises));
+    formAction(form);
+    showLoading();
   };
+
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-5">Create a question thread</h1>

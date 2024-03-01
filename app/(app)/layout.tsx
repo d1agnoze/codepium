@@ -1,9 +1,9 @@
-export default function Layout({ children }:{children: React.ReactNode}) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <div className="drawer lg:drawer-open drawer-end">
         <input id="drawer" type="checkbox" className="drawer-toggle" />
-        <div className="drawer-content flex flex-col items-center justify-center">
+        <div className="drawer-content flex flex-col items-center">
           {children}
         </div>
         <div className="drawer-side">
@@ -13,7 +13,7 @@ export default function Layout({ children }:{children: React.ReactNode}) {
             className="drawer-overlay"
           >
           </label>
-          <ul className="menu p-4 w-56 min-h-full bg-base-200 text-base-content">
+          <ul className="menu p-4 w-56 min-h-full bg-hslvar text-base-content">
             {/* Sidebar content here */}
             <li>
               <a>Sidebar Item 1</a>

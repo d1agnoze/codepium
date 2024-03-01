@@ -20,11 +20,17 @@ export async function addMetadata(prevState: any, formData: FormData): Promise<M
     const supabase = Supabase()
     const user = (await supabase.auth.getUser()).data.user!
     const res = await supabase.rpc('check_user_exists', { userid: user.id })
+    const { data: email_col, error: email_err } = await supabase.from(
+    "get_user_email",
+    ).select("*");
+    const email = email_col?.at(0)?.email ?? null
+
     if (!(!!res.data)) {
         const { error } = await supabase.rpc('create_user_data', {
             username: validate.data.username,
             displayname: validate.data.displayName,
-            about_param: validate.data.about
+            about_param: validate.data.about,
+            email: email
         })
         return !error ? { message: "User data created", ok: true } : { message: "An Error has occured, please try again later", ok: false }
     }
