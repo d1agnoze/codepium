@@ -18,6 +18,7 @@ export default function VotingComponent(
   { fromUser, thread_id, current_stars, user_id, mode }: VotingProps,
 ) {
   const [vote, setVote] = useState<VoteEnum>(VoteEnum.neutral);
+  const [star, setStar] = useState<number>(current_stars);
   const upStyle = vote === VoteEnum.up ? voteUpStyle : neutralStyle;
   const downStyle = vote === VoteEnum.down ? votedownstyle : neutralStyle;
   const buttonDisabled = fromUser || !user_id;
@@ -34,8 +35,11 @@ export default function VotingComponent(
           return VoteEnum.neutral;
         }
 
-        return direction === "up" ? VoteEnum.up : VoteEnum.up;
+        return direction === "up" ? VoteEnum.up : VoteEnum.down;
       });
+      direction === "up"
+        ? setStar((prev) => prev + 1)
+        : setStar((prev) => prev - 1);
       VoteHandler(vote, thread_id);
     }
   };
@@ -45,8 +49,7 @@ export default function VotingComponent(
    * Vote Hanlder: handler voting process to the server
    * @param direction VoteEnum
    * @thread_id id of the thread
-   */
-  const VoteHandler = (direction: VoteEnum, thread_id: string) => {
+   */ const VoteHandler = (direction: VoteEnum, thread_id: string) => {
     console.log(
       `User ${user_id} voted ${direction.toString()} on ${mode} with id ${thread_id}`,
     );
@@ -61,7 +64,7 @@ export default function VotingComponent(
       >
         <ArrowBigUp {...upStyle} />
       </Button>
-      <p className="text-lg">{current_stars}</p>
+      <p className="text-lg">{star}</p>
       <Button
         onClick={() => onClickHandler("down")}
         className={buttonClassName}
@@ -73,7 +76,8 @@ export default function VotingComponent(
   );
 }
 
-const buttonClassName = "p-0 bg-transparent";
+const buttonClassName =
+  "p-0 bg-transparent hover:bg-transparent hover:scale-125 transition-all disabled:cursor-not-allowed";
 const neutralStyle = {
   fill: "transparent",
   color: "hsl(var(--foreground))",

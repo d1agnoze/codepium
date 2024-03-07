@@ -1,5 +1,6 @@
 "use server";
 
+import AnswerComponent from "@/components/CommentComponent";
 import VotingComponent from "@/components/VotingComponent";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DEFAULT_AVATAR } from "@/defaults/profile";
@@ -83,6 +84,13 @@ export default async function Page({ params }: { params: { id: string } }) {
             </div>
           </article>
         </div>
+      </div>
+      <div>
+        <AnswerComponent
+          thread_id={data!.id}
+          user={user ? { id: user.id, email: user.email! } : null}
+          owner_id={data!.user_id!}
+        />
       </div>
     </div>
   );
