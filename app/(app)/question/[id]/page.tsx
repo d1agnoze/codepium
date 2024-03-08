@@ -1,6 +1,6 @@
 "use server";
 
-import AnswerComponent from "@/components/CommentComponent";
+import AnswerComponent from "@/components/AnswerComponent";
 import VotingComponent from "@/components/VotingComponent";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DEFAULT_AVATAR } from "@/defaults/profile";
