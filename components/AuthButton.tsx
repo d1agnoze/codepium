@@ -8,23 +8,27 @@ import {
 } from "@supabase/auth-helpers-nextjs";
 import { signOut } from "@/app/login/actions";
 import { useEffect, useState } from "react";
-import useLoading from "@/hooks/loading";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { hideLoading, showLoading } from "@/utils/loading.service";
 
 export default function AuthButton() {
   const [log, setLog] = useState<User | null>(null);
-  const { set_loading } = useLoading();
   const router = useRouter();
+
   useEffect(() => {
     const supabase = createClientComponentClient();
-    supabase.auth.getUser().then((data) => { setLog(data.data.user); });
+    supabase.auth.getUser()
+      .then((data) => {
+        setLog(data.data.user);
+      });
   }, []);
+
   const onSubmit = () => {
-    set_loading(true);
+    showLoading();
     signOut().finally(() => {
       setLog(null);
-      set_loading(false);
+      hideLoading();
       router.replace("/");
       router.refresh();
     });

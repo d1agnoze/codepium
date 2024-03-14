@@ -5,8 +5,6 @@ import { MessageObject } from "@/types/message.route";
 import Supabase from "@/utils/supabase/route-handler";
 
 export async function addMetadata(prevState: any, formData: FormData): Promise<MessageObject> {
-    console.log(formData.get('username'));
-
     const validate = formSchema.safeParse({
         about: formData.get('about') ? formData.get('about') : '',
         username: formData.get('username'),

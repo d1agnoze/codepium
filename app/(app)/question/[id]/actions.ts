@@ -1,7 +1,5 @@
 "use server";
-
 import { answerSchema } from "@/schemas/answer-submit.schema";
-import userService from "@/services/user.services";
 import { MessageObject } from "@/types/message.route";
 import Supabase from "@/utils/supabase/server-action";
 
@@ -10,7 +8,6 @@ export async function AnswerQuestion(
   formData: FormData,
 ): Promise<MessageObject> {
   const { data: { user } } = await Supabase().auth.getUser();
-
   const validated = answerSchema.safeParse({
     content: formData.get("content"),
     userValidated: JSON.parse(
@@ -29,6 +26,17 @@ export async function AnswerQuestion(
     return { message: "Bad request: User id does not match", ok: true };
   }
 
-  //TODO: make posgresql function to submit the answer, also check out the real time database bound
-  return { message: "OK", ok: true };
+  // Fetch data from supabse using function call
+  const { data: ans_id, error } = await Supabase()
+    .rpc("insert_answer", {
+      answer_text: validated.data.content,
+      question_id: validated.data.thread_id,
+      valid: validated.data.userValidated,
+    });
+
+  if (error) {
+    return { message: "Internal Server Error: " + error.message, ok: false };
+  }
+
+  return { message: ans_id, ok: true };
 }

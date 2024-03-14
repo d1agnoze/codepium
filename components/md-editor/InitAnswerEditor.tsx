@@ -56,9 +56,7 @@ export default function InitAnswerEditor({
                   ),
                 }]}
               />
-              <DiffSourceToggleWrapper>
-                <UndoRedo />
-              </DiffSourceToggleWrapper>
+              <UndoRedo />
             </>
           ),
         }),
@@ -73,10 +71,6 @@ export default function InitAnswerEditor({
           codeBlockLanguages: { js: "JavaScript", css: "CSS" },
         }),
         markdownShortcutPlugin(),
-        diffSourcePlugin({
-          diffMarkdown: "An older version",
-          viewMode: "rich-text",
-        }),
       ]}
       {...props}
       ref={editorRef}

@@ -65,8 +65,7 @@ export default function ExpertiseForm() {
                     </div> || <Skeleton count={2} />}
                 </CardContent>
                 <CardFooter className="flex flex-row-reverse">
-                    <form action={formAction} onSubmit={(event) => console.log(event)
-                    }>
+                    <form action={formAction}>
                         <input type="hidden" name="data" value={JSON.stringify(selected.map(item => item.id))} />
                         <Button type="submit" className="hover:bg-accent font-bold">All set? Let's GOOO😆</Button>
                     </form>

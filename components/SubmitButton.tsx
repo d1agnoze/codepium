@@ -8,10 +8,17 @@ import { Button } from "./ui/button";
  * NOTE: This submit button only works with server action placed inside action property of the form
  * @param text text to be displayed
  */
-export function SubmitButton({ text }: { text?: string }) {
+export function SubmitButton(
+  { text, className }: { text?: string; className?: string },
+) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" aria-disabled={pending} disabled={pending}>
+    <Button
+      type="submit"
+      aria-disabled={pending}
+      disabled={pending}
+      className={className ?? ""}
+    >
       {(text ? text : "Submit") + (pending ? " ..." : "")}
     </Button>
   );

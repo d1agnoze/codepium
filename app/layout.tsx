@@ -7,7 +7,7 @@ import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import AuthButton from "@/components/AuthButton";
 import { Input } from "@/components/ui/input";
-import { ToastContainer } from "react-toastify";
+import { Flip, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingProvider from "@/components/Loading";
 import Link from "next/link";
@@ -44,43 +44,46 @@ export default function RootLayout(
           enableSystem
           disableTransitionOnChange
         >
-            <LoadingProvider />
-            <div className="fixed bottom-2 right-2 z-20">
-              <DrawerHost />
-            </div>
-            <main className="min-h-screen flex flex-col">
-              <div className="navbar bg-card">
-                <div className="flex-1 max-md:flex-row-reverse">
-                  <Link className="btn btn-ghost text-xl" href={'/'}>Codepium</Link>
+          <LoadingProvider />
+          <div className="fixed bottom-2 right-2 z-20">
+            <DrawerHost />
+          </div>
+          <main className="min-h-screen flex flex-col">
+            <div className="navbar bg-card">
+              <div className="flex-1 max-md:flex-row-reverse">
+                <Link className="btn btn-ghost text-xl" href={"/"}>
+                  Codepium
+                </Link>
+              </div>
+              <div className="flex-none gap-2">
+                <div className="form-control max-sm:hidden">
+                  <Input
+                    type="text"
+                    placeholder="Search"
+                    className="input input-bordered w-24 md:w-auto"
+                  />
                 </div>
-                <div className="flex-none gap-2">
-                  <div className="form-control max-sm:hidden">
-                    <Input
-                      type="text"
-                      placeholder="Search"
-                      className="input input-bordered w-24 md:w-auto"
-                    />
-                  </div>
-                  {isSupabaseConnected && <AuthButton />}
-                  <div className="max-sm:hidden">
-                    <ModeToggle />
-                  </div>
+                {isSupabaseConnected && <AuthButton />}
+                <div className="max-sm:hidden">
+                  <ModeToggle />
                 </div>
               </div>
-              {children}
-            </main>
-            <ToastContainer
-              position="bottom-left"
-              autoClose={3000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable={false}
-              pauseOnHover
-              theme={"colored"}
-            />
+            </div>
+            {children}
+          </main>
+          <ToastContainer
+            position="bottom-left"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable={false}
+            transition={Flip}
+            pauseOnHover
+            theme={"dark"}
+          />
         </ThemeProvider>
       </body>
     </html>

@@ -117,3 +117,10 @@
   color: #006bff;
   text-decoration: underline;
 }
+details > summary {
+  list-style-type: "👉 ";
+}
+
+details[open] > summary {
+  list-style-type: "👇 ";
+}

@@ -23,6 +23,7 @@ import { AnswerQuestion } from "@/app/(app)/question/[id]/actions";
 import { INITIAL_MESSAGE_OBJECT } from "@/types/message.route";
 import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
+import { hideLoading, showLoading } from "@/utils/loading.service";
 
 interface Props {
   thread_id: string;
@@ -62,6 +63,7 @@ export default function AnswerComponent(props: Props) {
     payload.append("thread_id", values.thread_id);
 
     formAction(payload);
+    showLoading();
   };
 
   useEffect(() => {
@@ -71,6 +73,7 @@ export default function AnswerComponent(props: Props) {
       } else {
         toast.error(state.message);
       }
+      hideLoading();
     }
   }, [state]);
 
@@ -113,7 +116,7 @@ export default function AnswerComponent(props: Props) {
                         <Checkbox
                           id="checkbox"
                           onBlur={field.onBlur}
-                          onChange={field.onChange}
+                          onCheckedChange={field.onChange}
                         />
                         <div className="grid gap-1.5 leading-none">
                           <label
