@@ -1,10 +1,8 @@
 "use server";
 
 import { commentSchema } from "@/schemas/comment.schema";
-import {
-  Comment_Optimistic,
-  INITIAL_COMMENT_OPTIMISTIC,
-} from "@/types/comment.optimistic";
+import { INITIAL_COMMENT_OPTIMISTIC } from "@/types/comment.optimistic";
+import { comment } from "@/types/comment.type";
 import { MessageObject } from "@/types/message.route";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
@@ -12,7 +10,7 @@ import { cookies } from "next/headers";
 export async function CreateComment(
   _preState: any,
   formData: FormData,
-): Promise<Comment_Optimistic | MessageObject> {
+): Promise<comment | MessageObject> {
   const supabase = createServerActionClient({ cookies: () => cookies() });
   const { data: { user } } = await supabase.auth.getUser();
   const validated = commentSchema.safeParse({
@@ -47,15 +45,28 @@ export async function CreateComment(
       user_id: validated.data.user_id,
     }).returns<number>();
 
+  //error handling
   if (error || data == null || data === -1) {
     return {
       message: "Internal Server Error: Failed to process the request",
       ok: false,
     };
   }
-  console.log(data);
 
-  // TODO:get Full comment from database after retreiving newly created id
-  // bind it to Comment_Optimistic object
-  return INITIAL_COMMENT_OPTIMISTIC;
+  // success
+  const { data: res, error: res_err } = await supabase.from("get_comment_full")
+    .select().eq(
+      "id",
+      data,
+    ).returns<comment>().single();
+
+  //error handling
+  if (res_err || res == null) {
+    return {
+      message: "Internal Server Error: Failed to retrieve data",
+      ok: false,
+    };
+  }
+
+  return res;
 }

@@ -26,7 +26,7 @@ export async function GET(request: Request) {
   const showAllBool = showAll.trim().toLowerCase() === "true";
 
   let baseQuery = supabase.from("get_comment_full").select()
-    .order("created_at", { ascending: false }).eq("thread_ref", thread_ref);
+    .order("created_at", { ascending: true }).eq("thread_ref", thread_ref);
 
   switch (mode) {
     case "question":
@@ -64,6 +64,7 @@ export async function GET(request: Request) {
   }
 
   const { data, error } = await baseQuery.returns<comment[]>();
+  console.log(data?.length);
 
   if (error) return ServerError();
 

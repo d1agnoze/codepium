@@ -11,4 +11,7 @@ export type comment = {
 
   thread_ref: string;
   parent_ref: string;
+
+  mode: string;
+  host_id: string;
 };

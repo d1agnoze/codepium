@@ -20,6 +20,8 @@ export const commentSchema = z.object({
     return data.parent_id === data.thread_id;
   } else if (data.mode === "answer") {
     return data.thread_id != data.parent_id;
+  } else {
+    return true;
   }
 }, {
   message: "Invalid field combination",
