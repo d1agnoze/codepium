@@ -1,5 +1,6 @@
+import { get_comment_schema } from "@/schemas/get_comment_schema";
+import { paginationSchema } from "@/schemas/pagination.schema";
 import { comment } from "@/types/comment.type";
-import { modes } from "@/types/modes.type";
 import { BadRequest, ServerError } from "@/utils/httpStatus/utils";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
@@ -8,65 +9,61 @@ export async function GET(request: Request) {
   const supabase = createRouteHandlerClient({ cookies: () => cookies() });
   const { searchParams } = new URL(request.url);
 
-  const thread_ref = searchParams.get("thread_ref");
-  const parent_ref = searchParams.get("parent_ref");
-  const showAll = searchParams.get("showall");
-  const mode = searchParams.get("mode");
+  const validated = get_comment_schema.safeParse({
+    thread_ref: searchParams.get("thread_ref"),
+    parent_ref: searchParams.get("parent_ref"),
+    mode: searchParams.get("mode"),
+  });
 
-  if (
-    !thread_ref ||
-    !parent_ref ||
-    !showAll ||
-    !mode ||
-    mode.trim() === "comment"
-  ) {
-    return BadRequest();
-  }
+  // convert the params to Number
+  const params = paginationSchema.safeParse({
+    page: parseInt(searchParams.get("page") || "1"),
+    limit: parseInt(searchParams.get("limit") || "6"),
+  });
 
-  const showAllBool = showAll.trim().toLowerCase() === "true";
+  if (!validated.success || !params.success) return BadRequest();
 
   let baseQuery = supabase.from("get_comment_full").select()
-    .order("created_at", { ascending: true }).eq("thread_ref", thread_ref);
+    .order("created_at", { ascending: false }).eq(
+      "thread_ref",
+      validated.data.thread_ref,
+    )
+    .eq("parent_ref", validated.data.parent_ref)
+    .in("mode", [validated.data.mode, "comment"]);
 
-  switch (mode) {
-    case "question":
-      if (!showAllBool) {
-        baseQuery = baseQuery.eq("parent_ref", thread_ref).eq(
-          "mode",
-          "question",
-        );
-      } else {
-        baseQuery = baseQuery.eq("parent_ref", parent_ref)
-          .in("mode", ["question", "comment"]);
-      }
-      break;
-    case "post":
-      baseQuery = baseQuery.eq("parent_ref", thread_ref);
-      if (!showAllBool) {
-        baseQuery = baseQuery.eq("mode", "post");
-      } else {
-        baseQuery = baseQuery.in("mode", ["post", "comment"]);
-      }
-    case "answer":
-      if (!showAllBool) {
-        baseQuery = baseQuery.eq("parent_ref", parent_ref).eq("mode", "answer");
-      } else {
-        baseQuery = baseQuery.eq("parent_ref", parent_ref).in("mode", [
-          "answer",
-          "comment",
-        ]);
-      }
-      break;
+  const { count: count_data, error: count_err } = await supabase.from(
+    "get_comment_full",
+  ).select("*", { count: "exact", head: true }).eq(
+    "thread_ref",
+    validated.data.thread_ref,
+  ).eq("parent_ref", validated.data.parent_ref)
+    .in("mode", [validated.data.mode, "comment"]);
+
+  if (count_err || !count_data) return ServerError();
+  if (count_data === 0) {
+    return Response.json({ data: [], total: 0, page: 1, limit: 6 });
   }
 
-  if (!showAllBool) {
-    baseQuery = baseQuery.limit(3);
-  }
-
-  const { data, error } = await baseQuery.returns<comment[]>();
-  console.log(data?.length);
+  const { data, error } = await baseQuery.range(
+    (params.data.page - 1) * params.data.limit,
+    params.data.page * params.data.limit - 1,
+  ).returns<comment[]>();
 
   if (error) return ServerError();
 
-  return Response.json(data);
+  const result: Result = {
+    data: data || [],
+    total: count_data || 0,
+    page: params.data.page,
+    limit: params.data.limit,
+  };
+
+  return Response.json(result);
+}
+
+interface Result {
+  data: comment[];
+  total: number;
+  page: number;
+  limit: number;
 }

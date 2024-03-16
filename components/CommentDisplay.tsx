@@ -1,7 +1,18 @@
+import { PAGINATION_SETTINGS } from "@/defaults/comment_pagination";
 import { comment } from "@/types/comment.type";
+import { Pagination as Pag } from "@/types/pagination.interface";
 import { animated, useSpring, useTransition } from "@react-spring/web";
 import { MessageCircleX } from "lucide-react";
 import { useEffect, useState } from "react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "./ui/pagination";
 
 //TODO: comments display
 export default function CommentsDisplay(
@@ -22,10 +33,15 @@ export default function CommentsDisplay(
   const [cmts, setCmts] = useState<comment[]>([]);
   const [show, setShow] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const url =
+    `/api/general/comments?thread_ref=${thread_ref}&parent_ref=${parent_ref}&mode=${mode}&page=${1}&limit=${6}`;
 
-  const [displayComment, setDisplayComment] = useState<
-    { less: comment[]; full: comment[] }
-  >({ less: [], full: [] });
+  const [displayComment, setDisplayComment] = useState<Pag<comment>>({
+    data: [],
+    total: PAGINATION_SETTINGS.total,
+    page: PAGINATION_SETTINGS.page,
+    limit: PAGINATION_SETTINGS.limit,
+  });
 
   const selectReplyHandler = (data: { id: string; name: string }) => {
     setSelected((prev) => {
@@ -41,43 +57,15 @@ export default function CommentsDisplay(
   }, [selected]);
 
   useEffect(() => {
-    setIsLoading(true);
-    fetch(
-      `/api/general/comments?thread_ref=${thread_ref}&parent_ref=${parent_ref}&mode=${mode}&showall=${show}`,
-    )
-      .then((res) => res.json()).then((data: comment[]) => {
-        setDisplayComment((prev) => {
-          return { ...prev, less: data };
-        });
-      }).finally(() => setIsLoading(false));
-  }, []);
+    if (show) setCmts(displayComment.data.toSpliced(0, 3));
+    else setCmts(displayComment.data);
+  }, [show]);
 
   useEffect(() => {
-    if (show && displayComment.full.length === 0) {
-      setIsLoading(true);
-      fetch(
-        `/api/general/comments?thread_ref=${thread_ref}&parent_ref=${parent_ref}&mode=${mode}&showall=${show}`,
-      ).then((res) => res.json()).then((data: comment[]) => {
-        setDisplayComment((prev) => {
-          return { ...prev, full: data };
-        });
-      }).finally(() => setIsLoading(false));
-    }
-    if (show) {
-      setCmts(
-        displayComment.full.filter((cmt) =>
-          !(new_cmt.map((c) => c.id).includes(cmt.id))
-        ),
-      );
-    } else {
-      console.log("lud");
-      setCmts(
-        displayComment.less.filter((cmt) =>
-          !(new_cmt.map((c) => c.id).includes(cmt.id))
-        ),
-      );
-    }
-  }, [show, displayComment]);
+    setIsLoading(true);
+    fetch(url).then((res) => res.json()).then((data: Pag<comment>) => {
+    }).finally(() => setIsLoading(false));
+  }, []);
 
   const transitionAnimation = useTransition(new_cmt, {
     from: { opacity: 0 },
@@ -141,6 +129,27 @@ export default function CommentsDisplay(
             )}
         </div>
       ))}
+      {show &&
+        (
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious href="#" size={"sm"} />
+              </PaginationItem>
+              {[1, 2, 3].map((i) => (
+                <PaginationItem>
+                  <PaginationLink href="#" size={"sm"}>{i}</PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationEllipsis />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext href="#" size={"sm"} />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
       <div className="divider w-full pb-0 mb-1 mt-1"></div>
       <div
         className={`flex flex-nowrap justify-end items-center gap-2 text-xs ${
@@ -163,3 +172,7 @@ export default function CommentsDisplay(
     </div>
   );
 }
+// setCmts(
+//   displayComment.less.filter((cmt) =>
+//     !(new_cmt.map((c) => c.id).includes(cmt.id))
+//   ),

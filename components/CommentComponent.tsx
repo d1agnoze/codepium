@@ -130,77 +130,78 @@ export default function CommentComponent(
   };
 
   return (
-    <div className="h-full flex flex-col gap-1 px-4 text-xs text-right">
-      <div className="">
-        <CommentsDisplay
-          thread_ref={thread_id}
-          parent_ref={source_ref}
-          mode={mode}
-          source_user_id={source_user_id}
-          handler={replyHandler}
-          user_id={user_id}
-          new_cmt={newComment}
-        />
+      <div className="h-full flex flex-col gap-1 px-4 text-xs text-right">
+        <div className="">
+          <CommentsDisplay
+            thread_ref={thread_id}
+            parent_ref={source_ref}
+            mode={mode}
+            source_user_id={source_user_id}
+            handler={replyHandler}
+            user_id={user_id}
+            new_cmt={newComment}
+          />
+        </div>
+        <div>
+          <Collapsible
+            className="w-full space-y-2"
+            onOpenChange={setOpenComment}
+            open={openComment}
+          >
+            <div className="flex flex-row-reverse items-center space-x-4 justify-start">
+              <CollapsibleTrigger asChild>
+                <span
+                  className={`text-gray-400 ${
+                    isSubmitting ? "cursor-wait" : "cursor-pointer"
+                  } hover:text-secondary-foreground py-2`}
+                >
+                  {isSubmitting
+                    ? (
+                      <div className="flex gap-1">
+                        <span className="loading loading-dots loading-xs">
+                        </span>
+                        <span>Submitting comment</span>
+                      </div>
+                    )
+                    : "Add a comment"}
+                </span>
+              </CollapsibleTrigger>
+            </div>
+            <CollapsibleContent>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(submit)}
+                  className=""
+                >
+                  <FormField
+                    control={form.control}
+                    name="content"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            placeholder={` Your though of to this ${commentMode.mode} ${
+                              commentMode.reply_name
+                                ? "- owner: @" + commentMode.reply_name
+                                : ""
+                            }- Press <Enter> to submit `}
+                            className="text-xs"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <SubmitButton className="text-xs py-0 h-8 hidden" />
+                </form>
+              </Form>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
       </div>
-      <div>
-        <Collapsible
-          className="w-full space-y-2"
-          onOpenChange={setOpenComment}
-          open={openComment}
-        >
-          <div className="flex flex-row-reverse items-center space-x-4 justify-start">
-            <CollapsibleTrigger asChild>
-              <span
-                className={`text-gray-400 ${
-                  isSubmitting ? "cursor-wait" : "cursor-pointer"
-                } hover:text-secondary-foreground py-2`}
-              >
-                {isSubmitting
-                  ? (
-                    <div className="flex gap-1">
-                      <span className="loading loading-dots loading-xs"></span>
-                      <span>Submitting comment</span>
-                    </div>
-                  )
-                  : "Add a comment"}
-              </span>
-            </CollapsibleTrigger>
-          </div>
-          <CollapsibleContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(submit)}
-                className=""
-              >
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          placeholder={` Your though of to this ${commentMode.mode} ${
-                            commentMode.reply_name
-                              ? "- owner: @" + commentMode.reply_name
-                              : ""
-                          }- Press <Enter> to submit `}
-                          className="text-xs"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <SubmitButton className="text-xs py-0 h-8 hidden" />
-              </form>
-            </Form>
-          </CollapsibleContent>
-        </Collapsible>
-      </div>
-    </div>
   );
 }
 
