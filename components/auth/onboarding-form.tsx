@@ -22,6 +22,7 @@ import { stat } from "fs";
 import { toast } from "react-toastify";
 import useLoading from "@/hooks/loading";
 import { redirect, useRouter } from "next/navigation";
+import { MessageObject } from "@/types/message.route";
 
 const OnboardingForm = () => {
     const form = useForm<z.infer<typeof formSchema>>({ resolver: zodResolver(formSchema) })

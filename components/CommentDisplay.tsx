@@ -1,18 +1,28 @@
 import { PAGINATION_SETTINGS } from "@/defaults/comment_pagination";
 import { comment } from "@/types/comment.type";
 import { Pagination as Pag } from "@/types/pagination.interface";
-import { animated, useSpring, useTransition } from "@react-spring/web";
+import { animated, useTransition } from "@react-spring/web";
 import { MessageCircleX } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "./ui/pagination";
+import { paginationCalulator as paginationCalculate } from "@/utils/pagination.utils";
+import { toast } from "react-toastify";
+
+export interface SelectedHandler {
+  data: {
+    comment_user_id: string;
+    comment_user_name: string;
+  };
+  comment_id: string;
+  isDefault: boolean;
+}
 
 //TODO: comments display
 export default function CommentsDisplay(
@@ -20,52 +30,110 @@ export default function CommentsDisplay(
     thread_ref: string;
     parent_ref: string;
     mode: "question" | "post" | "answer";
-    handler: (data: { id: string; name: string }) => void;
+    handler: (comment: SelectedHandler) => void;
     source_user_id: string;
     user_id: string;
     new_cmt: comment[];
   },
 ) {
-  const [selected, setSelected] = useState<{ id: string; name: string }>({
-    id: source_user_id,
-    name: "",
+  const [selected, setSelected] = useState<SelectedHandler>({
+    data: {
+      comment_user_name: "",
+      comment_user_id: "",
+    },
+    comment_id: "",
+    isDefault: true,
   });
   const [cmts, setCmts] = useState<comment[]>([]);
   const [show, setShow] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const url =
-    `/api/general/comments?thread_ref=${thread_ref}&parent_ref=${parent_ref}&mode=${mode}&page=${1}&limit=${6}`;
-
   const [displayComment, setDisplayComment] = useState<Pag<comment>>({
     data: [],
     total: PAGINATION_SETTINGS.total,
     page: PAGINATION_SETTINGS.page,
     limit: PAGINATION_SETTINGS.limit,
   });
+  const [curr_page, setCurr_page] = useState<number>(displayComment.page);
+  const pagination_list: number[] = paginationCalculate(
+    curr_page,
+    displayComment.total,
+  );
 
-  const selectReplyHandler = (data: { id: string; name: string }) => {
-    setSelected((prev) => {
-      return {
-        id: prev.id === data.id ? source_user_id : data.id,
-        name: prev.id === data.id ? "" : data.name,
-      };
+  const url =
+    `/api/general/comments?thread_ref=${thread_ref}&parent_ref=${parent_ref}&mode=${mode}&page=${curr_page}&limit=${6}`;
+
+  const selectReplyHandler = (cmt: comment) => {
+    const isDefault = cmt.id === selected.comment_id || cmt.user_id === user_id;
+    setSelected((_) => {
+      return isDefault
+        ? {
+          data: {
+            comment_user_name: "",
+            comment_user_id: "",
+          },
+          comment_id: "",
+          isDefault: true,
+        }
+        : {
+          data: {
+            comment_user_name: cmt.user_name,
+            comment_user_id: cmt.user_id,
+          },
+          comment_id: cmt.id,
+          isDefault: false,
+        };
     });
   };
 
-  useEffect(() => {
-    handler(selected);
-  }, [selected]);
+  useLayoutEffect(() => () => sessionStorage.clear(), []);
+
+  useEffect(() => handler(selected), [selected]);
 
   useEffect(() => {
-    if (show) setCmts(displayComment.data.toSpliced(0, 3));
-    else setCmts(displayComment.data);
-  }, [show]);
+    console.log("show", displayComment.total);
+    if (!show) {
+      setCmts(
+        displayComment.data.slice(0, 2),
+      );
+    } else setCmts(displayComment.data);
+  }, [show, displayComment]);
 
   useEffect(() => {
+    const abort = new AbortController();
+    if (sessionStorage.getItem(`${thread_ref}_COMMENT_${curr_page}`)) {
+      const data: Pag<comment> = JSON.parse(
+        sessionStorage.getItem(`${thread_ref}_COMMENT_${curr_page}`) as string,
+      );
+      setDisplayComment((prev) => {
+        return { ...prev, data: data.data };
+      });
+      return;
+    }
+    //Action when switching pages
     setIsLoading(true);
-    fetch(url).then((res) => res.json()).then((data: Pag<comment>) => {
-    }).finally(() => setIsLoading(false));
-  }, []);
+    fetch(url, { signal: abort.signal }).then((res) => res.json()).then(
+      (data: Pag<comment>) => {
+        if ((data as any).message != undefined) {
+          toast.error("We have a server issue");
+          return;
+        }
+        if (!(displayComment.data.length === 0)) {
+          sessionStorage.setItem(
+            `${thread_ref}_COMMENT_${data.page}`,
+            JSON.stringify(data),
+          );
+        }
+        setDisplayComment({
+          ...data,
+          data: data.data.filter((cmt) =>
+            !(new_cmt.map((c) => c.id).includes(cmt.id))
+          ),
+        });
+      },
+    ).finally(() => setIsLoading(false));
+
+    return () => abort.abort();
+  }, [curr_page]);
 
   const transitionAnimation = useTransition(new_cmt, {
     from: { opacity: 0 },
@@ -76,7 +144,12 @@ export default function CommentsDisplay(
 
   return (
     <div className="flex flex-col text-right items-end">
-      <div className="divider w-full pb-0 mb-0 mt-1"></div>
+      <div
+        className={`divider w-full pb-0 mb-0 mt-1" + ${
+          displayComment.total > 0 ? "" : "hidden"
+        }`}
+      >
+      </div>
       {new_cmt.length > 0 &&
         transitionAnimation((style, item) => (
           <animated.div style={style}>
@@ -87,7 +160,7 @@ export default function CommentsDisplay(
               <span className="font-bold">You:</span>
               {item.reply_to !== source_user_id &&
                 (
-                  <span className="px-0 text-white font-bold">
+                  <span className="px-0 font-bold">
                     {`@${item.receiver_name}`}
                   </span>
                 )}
@@ -104,53 +177,79 @@ export default function CommentsDisplay(
         >
           <span
             className="p-1 cursor-pointer bg-gray-700 rounded-md hover:scale-105 transition-all text-white"
-            onClick={() =>
-              selectReplyHandler({ id: cmt.user_id, name: cmt.user_name })}
+            onClick={() => selectReplyHandler(cmt)}
           >
             {cmt.user_name}
           </span>
-          {cmt.reply_to !== source_user_id &&
+          {cmt.mode === "comment" &&
             (
-              <span className="px-0 text-white font-bold underline">
+              <span className="px-0 font-bold underline">
                 {`@${cmt.receiver_name}`}
               </span>
             )}
           <span>
             {cmt.content}
           </span>
-          {selected.id === cmt.user_id && selected.id !== user_id &&
+          {selected.comment_id === cmt.id &&
+            selected.data.comment_user_id !== user_id &&
             (
               <div
-                onClick={() =>
-                  selectReplyHandler({ id: cmt.user_id, name: cmt.user_name })}
+                onClick={() => selectReplyHandler(cmt)}
               >
                 <MessageCircleX size={16} color="hsl(var(--accent))" />
               </div>
             )}
         </div>
       ))}
-      {show &&
+      {show && displayComment.total > 0 &&
         (
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious href="#" size={"sm"} />
-              </PaginationItem>
-              {[1, 2, 3].map((i) => (
-                <PaginationItem>
-                  <PaginationLink href="#" size={"sm"}>{i}</PaginationLink>
-                </PaginationItem>
-              ))}
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext href="#" size={"sm"} />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          <div className="w-full flex float-right mt-3">
+            <Pagination className="justify-end md:scale-90 md:translate-x-10">
+              <PaginationContent>
+                {pagination_list.at(0) !== 1 &&
+                  (
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        size={"sm"}
+                        onClick={() => setCurr_page(curr_page - 1)}
+                      />
+                    </PaginationItem>
+                  )}
+                {pagination_list
+                  .map((i) => (
+                    <PaginationItem key={Math.random()}>
+                      <PaginationLink
+                        href="#"
+                        size={"sm"}
+                        onClick={() => setCurr_page(i)}
+                        isActive={i === curr_page}
+                      >
+                        {i}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                {pagination_list.at(pagination_list.length - 1) !==
+                    displayComment.total &&
+                  (
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        size={"sm"}
+                        onClick={() => setCurr_page(curr_page + 1)}
+                      />
+                    </PaginationItem>
+                  )}
+              </PaginationContent>
+            </Pagination>
+          </div>
         )}
-      <div className="divider w-full pb-0 mb-1 mt-1"></div>
+      <div
+        className={`divider w-full mb-1 mt-0" + ${
+          displayComment.total > 0 ? "" : "hidden"
+        }`}
+      >
+      </div>
       <div
         className={`flex flex-nowrap justify-end items-center gap-2 text-xs ${
           isLoading ? "cursor-wait text-gray-400" : "cursor-pointer"
@@ -164,8 +263,11 @@ export default function CommentsDisplay(
             </>
           )
           : (
-            <span onClick={() => setShow((prev) => !prev)}>
-              {show ? "Hide" : "Show"} all comments
+            <span
+              onClick={() => setShow((prev) => !prev)}
+              className={displayComment.total > 0 ? "" : "hidden"}
+            >
+              {show ? "Hide most" : "Show all"} comments
             </span>
           )}
       </div>
@@ -173,6 +275,5 @@ export default function CommentsDisplay(
   );
 }
 // setCmts(
-//   displayComment.less.filter((cmt) =>
-//     !(new_cmt.map((c) => c.id).includes(cmt.id))
+//   displayComment.less.filter((cmt) => !(new_cmt.map((c) => c.id).includes(cmt.id))
 //   ),

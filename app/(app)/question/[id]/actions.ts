@@ -4,7 +4,7 @@ import { MessageObject } from "@/types/message.route";
 import Supabase from "@/utils/supabase/server-action";
 
 export async function AnswerQuestion(
-  prevState: any,
+  _: any,
   formData: FormData,
 ): Promise<MessageObject> {
   const { data: { user } } = await Supabase().auth.getUser();

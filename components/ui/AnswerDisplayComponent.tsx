@@ -10,21 +10,26 @@ import { sha256 } from "js-sha256";
 import { VoteMode } from "@/enums/vote-mode.enum";
 import VotingComponent from "../VotingComponent";
 import { useRef } from "react";
-import { from } from "rxjs";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "./tooltip";
+import CommentComponent from "../CommentComponent";
+import { VoteEnum } from "@/enums/vote.enum";
 
 export default function AnswerDisplay(
-  { ans, current_user_id }: { ans: Answer; current_user_id: string },
+  { ans, current_user_id, user_prev_vote }: {
+    ans: Answer;
+    current_user_id: string;
+    user_prev_vote: { thread_ref: string; direction: VoteEnum }[];
+  },
 ): JSX.Element {
   const fromUser = useRef(ans.user_id === current_user_id);
   return (
     <div className="w-full bg-hslvar rounded-lg p-5 flex gap-3">
-      <div className="w-[30px] items-center flex flex-col justify-center">
+      <div className="w-[30px] items-center flex flex-col justify-start">
         {ans.status &&
           (
             <TooltipProvider>
@@ -39,14 +44,16 @@ export default function AnswerDisplay(
             </TooltipProvider>
           )}
         <VotingComponent
+          current_direction={VoteEnum.neutral}
           fromUser={fromUser.current}
           mode={VoteMode.answer}
-          thread_id={ans.id}
+          thread_id={ans.thread_ref}
           current_stars={ans.stars}
-          user_id={ans.id}
+          user_id={ans.thread_ref}
+          source_id={ans.source_ref}
         />
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 w-full">
         <div className="flex gap-3 items-center">
           <Avatar className="w-5 h-5 border-white border-2">
             <AvatarImage
@@ -64,6 +71,15 @@ export default function AnswerDisplay(
         </div>
         <div className="pt-3 flex-grow">
           <Markdown>{ans.content}</Markdown>
+        </div>
+        <div>
+          <CommentComponent
+            mode="answer"
+            user_id={current_user_id}
+            source_ref={ans.source_ref}
+            thread_id={ans.thread_ref}
+            source_user_id={ans.source_user_id}
+          />
         </div>
       </div>
     </div>

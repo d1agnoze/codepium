@@ -1,9 +1,10 @@
 "use server";
 
 import { commentSchema } from "@/schemas/comment.schema";
-import { INITIAL_COMMENT_OPTIMISTIC } from "@/types/comment.optimistic";
+import { voteSchema } from "@/schemas/vote.schema";
 import { comment } from "@/types/comment.type";
 import { MessageObject } from "@/types/message.route";
+import { Vote } from "@/types/vote.type";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 
@@ -69,4 +70,48 @@ export async function CreateComment(
   }
 
   return res;
+}
+
+export async function createVote(_: any, formData: FormData): Promise<MessageObject> {
+  const supabase = createServerActionClient({ cookies: () => cookies() });
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (user == null) {
+    return { message: "Bad request: Invalid identity", ok: false, code: 401 };
+  }
+
+  const validated = voteSchema.safeParse({
+    mode: formData.get("mode"),
+    user_id: formData.get("user_id"),
+    thread_id: formData.get("thread_id"),
+    impact: formData.get("impact"),
+    direction: formData.get("direction"),
+    source_id: formData.get("source_id"),
+  });
+
+  if (!validated.success) {
+    return { message: validated.error.message, ok: false, code: 400 };
+  }
+
+  if (validated.data.user_id !== user?.id) {
+    return {
+      message: "Bad request: User id does not match",
+      ok: false,
+      code: 400,
+    };
+  }
+  console.log(validated.data);
+
+  // const { data, error } = await supabase.rpc("create_vote", {
+  //   mode: validated.data.mode,
+  //   user_id: validated.data.user_id,
+  //
+  //   thread_id: validated.data.thread_id,
+  //   source_id: validated.data.source_id,
+  //
+  //   direction: validated.data.direction.toString(),
+  //   impact: 1,
+  // }).select();
+
+  return { message: "Success", ok: true };
 }

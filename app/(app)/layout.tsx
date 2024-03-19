@@ -16,10 +16,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <ul className="menu p-4 w-56 min-h-full bg-hslvar text-base-content">
             {/* Sidebar content here */}
             <li>
-              <a>Sidebar Item 1</a>
+              <h2 className="text-primary text-md">❓ Lastest Questions</h2>
             </li>
             <li>
-              <a>Sidebar Item 2</a>
+              <h2 className="text-primary text-md">📝 Lastest Posts</h2>
             </li>
           </ul>
         </div>

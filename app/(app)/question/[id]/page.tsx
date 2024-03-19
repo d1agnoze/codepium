@@ -13,11 +13,13 @@ import {
 } from "@/components/ui/collapsible";
 import { DEFAULT_AVATAR } from "@/defaults/profile";
 import { VoteMode } from "@/enums/vote-mode.enum";
+import { VoteEnum } from "@/enums/vote.enum";
 import { Answer } from "@/types/answer.type";
 import { Question } from "@/types/question.type";
+import { calculateVotes } from "@/utils/vote.utils";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { sha256 } from "js-sha256";
-import { ChevronDown, ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown } from "lucide-react";
 import moment from "moment";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
@@ -61,17 +63,53 @@ export default async function Page({ params }: { params: { id: string } }) {
   ).select().returns<Answer[]>();
 
   if (ans_err) console.error(ans_err);
+
+  let default_prev_vote_ans: { thread_ref: string; direction: VoteEnum }[] = [];
+  let default_prev_vote_ques: VoteEnum = VoteEnum.neutral;
+
+  if (user != null && answers) {
+    const { data: vote_ans, error: vote_ans_err } = await supabase
+      .from("get_vote_answer")
+      .select("thread_ref, direction")
+      .eq("source_ref", params.id)
+      .eq("sender", user?.id ?? "")
+      .in("thread_ref", [...(answers!.map((ans) => ans.thread_ref.toString()))])
+      .returns<{ thread_ref: string; direction: boolean }[]>();
+
+    const { data: vote_ques, error: vote_ques_err } = await supabase.from(
+      "get_vote_answer",
+    ).select("direction").eq("source_ref", params.id).eq(
+      "sender",
+      user?.id ?? "",
+    ).eq("thread_ref", params.id).limit(1)
+      .returns<{ direction: boolean }[]>();
+
+    if (vote_ans_err || vote_ques_err || !vote_ques || !vote_ans) {
+      throw new Error("Failed to fetch votes");
+    }
+
+    default_prev_vote_ans = calculateVotes(vote_ans, answers);
+
+    if (vote_ques != null && vote_ques.length > 0) {
+      default_prev_vote_ques = vote_ques[0].direction
+        ? VoteEnum.up
+        : VoteEnum.down;
+    }
+  }
+
   return (
     <div className="w-full box-border px-3 lg:px-32 mt-3 flex flex-col gap-1">
       <div className="w-full bg-hslvar px-4 py-5 rounded-lg">
         <div className="w-full flex max-sm:flex-col-reverse gap-2">
-          <aside className="flex md:flex-col max-sm:flex-row-reverse gap-2 mx-3 justify-center items-center">
+          <aside className="flex md:flex-col max-sm:flex-row-reverse gap-2 mx-3 pt-3 justify-start items-center">
             <VotingComponent
               fromUser={!!fromUser}
-              thread_id={data!.id}
+              thread_id={null}
               current_stars={data!.stars}
               mode={VoteMode.question}
               user_id={user?.id}
+              source_id={data!.id}
+              current_direction={default_prev_vote_ques}
             />
           </aside>
           <article className="flex-grow">
@@ -137,25 +175,33 @@ export default async function Page({ params }: { params: { id: string } }) {
         </Collapsible>
       </div>
       <div>
-        {answers?.length === 0 && <p>This question has no answers [yet😉]</p>}
+        {answers?.length === 0 && (
+          <p className="w-full text-center bg-hslvar p-4 rounded-md">
+            This question has no answers [yet😉]
+          </p>
+        )}
       </div>
       <div>
-        {ans_err && <p>There was an error...</p>}
+        {ans_err && (
+          <p className="w-full text-center bg-hslvar p-4 rounded-md">
+            There was an error...
+          </p>
+        )}
       </div>
       <div className="">
         <div className="flex flex-col gap-3">
           {answers?.sort((a, b) => {
             if (a.status === b.status) {
-              return new Date(b.created_at).getTime() -
-                new Date(a.created_at).getTime();
+              return a.stars - b.stars;
             } else {
               return +b.status - +a.status;
             }
           }).map((ans) => (
             <AnswerDisplay
               current_user_id={user?.id ?? ""}
-              key={ans.id}
+              key={ans.thread_ref}
               ans={ans}
+              user_prev_vote={default_prev_vote_ans}
             />
           ))}
         </div>

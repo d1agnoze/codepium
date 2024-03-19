@@ -39,7 +39,9 @@ export async function GET(request: Request) {
   ).eq("parent_ref", validated.data.parent_ref)
     .in("mode", [validated.data.mode, "comment"]);
 
-  if (count_err || !count_data) return ServerError();
+  if (count_err != null || count_data == null) {
+    return ServerError();
+  }
   if (count_data === 0) {
     return Response.json({ data: [], total: 0, page: 1, limit: 6 });
   }
@@ -49,11 +51,14 @@ export async function GET(request: Request) {
     params.data.page * params.data.limit - 1,
   ).returns<comment[]>();
 
-  if (error) return ServerError();
+  if (error != null) {
+    console.log(error);
+    return ServerError();
+  }
 
   const result: Result = {
     data: data || [],
-    total: count_data || 0,
+    total: Math.ceil(count_data / params.data.limit) || 0,
     page: params.data.page,
     limit: params.data.limit,
   };

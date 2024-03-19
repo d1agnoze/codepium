@@ -27,8 +27,6 @@ export default function AuthButton() {
   const onSubmit = () => {
     showLoading();
     signOut().finally(() => {
-      setLog(null);
-      hideLoading();
       router.replace("/");
       router.refresh();
     });
@@ -39,7 +37,10 @@ export default function AuthButton() {
         <Avatar>
           <AvatarImage
             className="cursor-pointer"
-            onClick={() => router.push("/profile")}
+            onClick={() => {
+              showLoading()
+              router.push("/profile");
+            }}
             src={`https://gravatar.com/avatar/${
               sha256(log!.email!.trim().toLowerCase())
             }?d=${encodeURIComponent(DEFAULT_AVATAR)}&s=100`}

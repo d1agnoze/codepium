@@ -24,6 +24,7 @@ import { INITIAL_MESSAGE_OBJECT } from "@/types/message.route";
 import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
 import { hideLoading, showLoading } from "@/utils/loading.service";
+import { useRouter } from "next/navigation";
 
 interface Props {
   thread_id: string;
@@ -47,6 +48,7 @@ export default function AnswerComponent(props: Props) {
   });
 
   const ref = useRef<MDXEditorMethods>(null);
+  const router = useRouter();
 
   const [fromUser] = useState(
     (props.user != null) &&
@@ -70,6 +72,7 @@ export default function AnswerComponent(props: Props) {
     if (state.message !== "") {
       if (state.ok) {
         toast.success(state.message);
+        router.refresh();
       } else {
         toast.error(state.message);
       }

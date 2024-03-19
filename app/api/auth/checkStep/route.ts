@@ -7,7 +7,7 @@ export async function GET() {
     const cookieStore = cookies()
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
     const { data, error } = await supabase.rpc('check_user_step')
-    if (error) return NextResponse.json({ message: 'Error connecting to the database' }, { status: 400 })
+    if (error) return NextResponse.json({ message: 'Error connecting to the database' }, { status: 500 })
     let res
     switch (data) {
         case Step.uninitialized:
@@ -16,6 +16,8 @@ export async function GET() {
             res = { step: data, message: "User's expertise not initialized" }
         case Step.completed:
             res = { step: data, message: "User's profile has already been initialized" }
+        case Step.no_metadata:
+            res = { step: data, message: "User's profile is missing metadata" }
     }
     return Response.json(res)
 }
