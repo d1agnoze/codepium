@@ -44,12 +44,16 @@ export default function AnswerDisplay(
             </TooltipProvider>
           )}
         <VotingComponent
-          current_direction={VoteEnum.neutral}
+          current_direction={user_prev_vote.filter((x) =>
+            x.thread_ref === ans.thread_ref
+          )[0].direction}
           fromUser={fromUser.current}
           mode={VoteMode.answer}
           thread_id={ans.thread_ref}
-          current_stars={ans.stars}
-          user_id={ans.thread_ref}
+          current_stars={ans.stars -
+            user_prev_vote.filter((x) => x.thread_ref === ans.thread_ref)[0]
+              .direction}
+          user_id={current_user_id}
           source_id={ans.source_ref}
         />
       </div>

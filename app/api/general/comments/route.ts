@@ -52,7 +52,6 @@ export async function GET(request: Request) {
   ).returns<comment[]>();
 
   if (error != null) {
-    console.log(error);
     return ServerError();
   }
 

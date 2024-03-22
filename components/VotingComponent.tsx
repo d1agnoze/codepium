@@ -2,14 +2,13 @@
 
 import { ArrowBigDown, ArrowBigUp } from "lucide-react";
 import { Button } from "./ui/button";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { VoteEnum } from "@/enums/vote.enum";
 import { VoteMode } from "@/enums/vote-mode.enum";
 import { toast } from "react-toastify";
-import { useFormState } from "react-dom";
-import { INITIAL_MESSAGE_OBJECT } from "@/types/message.route";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { voteSchema } from "@/schemas/vote.schema";
 import { createVote } from "@/app/(app)/actions";
-import { handler } from "tailwindcss-animate";
 
 interface VotingProps {
   fromUser: boolean;
@@ -33,81 +32,79 @@ export default function VotingComponent(
   }: VotingProps,
 ) {
   const [vote, setVote] = useState<VoteEnum>(current_direction);
-  const [star, setStar] = useState<number>(current_stars);
-  const [isDirty, setIsDirty] = useState(false);
-  const [dir, setDir] = useState<boolean | null>(null);
 
-  const [state, formAction] = useFormState(createVote, INITIAL_MESSAGE_OBJECT);
+  const [star, setStar] = useState<number>(current_stars);
 
   const upStyle = vote === VoteEnum.up ? voteUpStyle : neutralStyle;
   const downStyle = vote === VoteEnum.down ? votedownstyle : neutralStyle;
   const buttonDisabled = fromUser || !user_id;
 
-  useLayoutEffect(() => {
-    const handle = () => {
-      if (isDirty) VoteHandler();
-    };
-    
-    window.addEventListener("beforeunload", handle);
-    return () => {
-      window.removeEventListener("beforeunload", handle);
-    };
-  });
-
   useEffect(() => {
-    if (vote !== current_direction) setIsDirty(true);
-
     if (vote === VoteEnum.up) setStar(current_stars + 1);
     if (vote === VoteEnum.down) setStar(current_stars - 1);
     if (vote === VoteEnum.neutral) setStar(current_stars);
   }, [vote]);
 
-  useEffect(() => {
-    if (state.message !== "" && !state.ok) toast.error(state.message);
-  }, [state]);
-
   /**
    * click Handler: handler voting process client side
    * @param direction either up or down
    */
-  const onClickHandler = (direction: "up" | "down") => {
-    setDir(direction === "up");
+  const onClickHandler = async (direction: "up" | "down") => {
+    const new_dir = direction === "up";
+    //vote data to reflect on UI
+    const newVote = () => {
+      if (vote === VoteEnum.up && direction === "up") return VoteEnum.neutral;
+      if (vote === VoteEnum.down && direction === "down") {
+        return VoteEnum.neutral;
+      }
+      return new_dir ? VoteEnum.up : VoteEnum.down;
+    };
+
+    //vote data to reflect on server
+    const newImpact = () => {
+      if (vote === VoteEnum.up && direction === "up") return VoteEnum.down;
+      if (vote === VoteEnum.down && direction === "down") return VoteEnum.up;
+      return new_dir ? VoteEnum.up : VoteEnum.down;
+    };
 
     if (!fromUser) {
-      setVote((prev) => {
-        if (prev === VoteEnum.up && direction === "up") return VoteEnum.neutral;
-        if (prev === VoteEnum.down && direction === "down") {
-          return VoteEnum.neutral;
-        }
-        return direction === "up" ? VoteEnum.up : VoteEnum.down;
-      });
+      setVote(newVote());
+
+      await VoteHandler(new_dir, newImpact(), newVote());
     }
   };
 
   /**
    * Vote Hanlder: handler voting process to the server
-   * @param direction VoteEnum
-   * @thread_id id of the thread
    */
-  const VoteHandler = async () => {
+  const VoteHandler = async (
+    new_dir: boolean,
+    impact: VoteEnum,
+    new_vote: VoteEnum,
+  ) => {
+    if (!user_id) return;
+
     const payload = new FormData();
-
-    if (!user_id || !dir) return;
-
+    payload.append("mode", mode);
     payload.append("user_id", user_id);
-    payload.append("thread_id", thread_id ?? "");
+    payload.append("thread_id", thread_id ?? source_id);
+    payload.append("impact", impact.toString());
+    payload.append("direction", new_dir.toString());
     payload.append("source_id", source_id);
-    payload.append("mode", mode.toString());
-    payload.append("impact", vote.toString());
-    payload.append("direction", dir.toString());
+    payload.append("final_stat", new_vote.toString());
 
-    formAction(payload);
+    createVote(payload).then((res) => {
+      if (!res.ok) {
+        toast.error("Something went wrong");
+        console.log(res.message);
+      }
+    });
   };
 
   return (
     <>
       <Button
-        onClick={() => onClickHandler("up")}
+        onClick={async () => await onClickHandler("up")}
         className={buttonClassName}
         disabled={buttonDisabled}
       >
@@ -115,7 +112,7 @@ export default function VotingComponent(
       </Button>
       <p className="text-lg">{star}</p>
       <Button
-        onClick={() => onClickHandler("down")}
+        onClick={async () => await onClickHandler("down")}
         className={buttonClassName}
         disabled={buttonDisabled}
       >
@@ -125,6 +122,7 @@ export default function VotingComponent(
   );
 }
 
+// INFO:------CUSTOM STYLING------
 const buttonClassName =
   "p-0 bg-transparent hover:bg-transparent hover:scale-125 transition-all disabled:cursor-not-allowed";
 const neutralStyle = {

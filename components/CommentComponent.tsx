@@ -46,7 +46,7 @@ export default function CommentComponent(
   >({ reply_to: source_user_id, mode: mode, reply_name: "" });
 
   const [newComment, setNewComment] = useState<comment[]>([]);
-  const [openComment, setOpenComment] = useState<boolean>(false);
+  const [openComment, setOpenComment] = useState<boolean>(mode === "post");
   const [isSubmitting, setIsSubmiting] = useState<boolean>(false);
 
   const [state, formAction] = useFormState(
@@ -131,7 +131,11 @@ export default function CommentComponent(
   };
 
   return (
-    <div className="h-full flex flex-col gap-1 px-4 text-xs text-right">
+    <div
+      className={`h-full flex ${
+        mode === "post" ? "flex-col-reverse" : "flex-col text-xs"
+      } gap-1 px-4 text-right`}
+    >
       <div className="">
         <CommentsDisplay
           thread_ref={thread_id}
@@ -149,7 +153,11 @@ export default function CommentComponent(
           onOpenChange={setOpenComment}
           open={openComment}
         >
-          <div className="flex flex-row-reverse items-center space-x-4 justify-start">
+          <div
+            className={`flex ${
+              mode !== "post" && "flex-row-reverse"
+            } items-center space-x-4 justify-start`}
+          >
             <CollapsibleTrigger asChild>
               <span
                 className={`text-gray-400 ${
@@ -189,6 +197,7 @@ export default function CommentComponent(
                           }- Press <Enter> to submit `}
                           className="text-xs"
                           {...field}
+                          disabled={!user_id}
                         />
                       </FormControl>
                       <FormDescription />

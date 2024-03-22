@@ -3,7 +3,7 @@ import { Answer } from "@/types/answer.type";
 
 interface vote_prev_returned {
   thread_ref: string;
-  direction: boolean;
+  user_status: VoteEnum;
 }
 interface vote_prev {
   thread_ref: string;
@@ -19,9 +19,7 @@ export function calculateVotes(
       thread_ref: item.thread_ref,
       direction: !index.includes(item.thread_ref)
         ? VoteEnum.neutral
-        : (arr1.filter((e) => e.thread_ref === item.thread_ref)[0].direction
-          ? VoteEnum.up
-          : VoteEnum.down),
+        : (arr1.filter((e) => e.thread_ref === item.thread_ref)[0].user_status),
     };
   });
 

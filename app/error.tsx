@@ -9,12 +9,10 @@ export default function Error(
   { error, reset }: { error: Error & { digest?: string }; reset: () => void },
 ) {
   useEffect(() => hideLoading(), []);
-  useEffect(() => {
-    console.error(error);
-  }, [error]);
+  useEffect(() => console.error(error), [error]);
 
   return (
-    <div className="mt-3 lg:mt-7">
+    <div className="mt-3 lg:mt-7 mx-auto">
       <div className="hero min-h-screen items-start justify-start">
         <div className="hero-content flex-col lg:flex-row">
           <img

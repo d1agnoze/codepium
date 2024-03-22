@@ -27,14 +27,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AuthChoice } from "@/enums/login-or-signup.choices";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
-import { MessageObject } from "@/types/message.route";
+import { INITIAL_MESSAGE_OBJECT, MessageObject } from "@/types/message.route";
+import { hideLoading, showLoading } from "@/utils/loading.service";
 
 export default function Login() {
   const supabase = createClientComponentClient();
-  const [state, formAction] = useFormState(signIn, initMessage);
-  const [signUpState, formSignUpAction] = useFormState(signUp, initMessage);
+  const [state, formAction] = useFormState(signIn, INITIAL_MESSAGE_OBJECT);
+  const [signUpState, formSignUpAction] = useFormState(
+    signUp,
+    INITIAL_MESSAGE_OBJECT,
+  );
   const [mode, setMode] = useState<AuthChoice>(AuthChoice.LogIn);
-  const { set_loading } = useLoading();
   const router = useRouter();
   const form = useForm<z.infer<typeof authSchema>>({
     resolver: zodResolver(authSchema),
@@ -48,23 +51,22 @@ export default function Login() {
     form.reset();
     payload.append("email", values.email);
     payload.append("password", values.password);
-    set_loading(true);
+    showLoading();
     mode === AuthChoice.LogIn ? formAction(payload) : formSignUpAction(payload);
   };
 
   useEffect(() => {
     if (state.message !== "") {
-      set_loading(false);
       state.ok ? toast.success(state.message) : toast.error(state.message);
       router.replace("/");
     }
     if (signUpState.message !== "") {
-      set_loading(false);
       signUpState.ok
         ? toast.success(signUpState.message)
         : toast.error(signUpState.message);
       router.replace("/");
     }
+    hideLoading();
   }, [state, signUpState]);
   return (
     <div className="h-screen min-w-0 md:mt-10 flex justify-center max-sm">
@@ -148,7 +150,3 @@ export default function Login() {
     </div>
   );
 }
-const initMessage: MessageObject = {
-  message: "",
-  ok: false,
-};

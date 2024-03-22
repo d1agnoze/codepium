@@ -24,7 +24,6 @@ export interface SelectedHandler {
   isDefault: boolean;
 }
 
-//TODO: comments display
 export default function CommentsDisplay(
   { thread_ref, parent_ref, mode, handler, source_user_id, user_id, new_cmt }: {
     thread_ref: string;
@@ -90,7 +89,6 @@ export default function CommentsDisplay(
   useEffect(() => handler(selected), [selected]);
 
   useEffect(() => {
-    console.log("show", displayComment.total);
     if (!show) {
       setCmts(
         displayComment.data.slice(0, 2),
@@ -141,9 +139,13 @@ export default function CommentsDisplay(
     leave: { opacity: 0 },
     config: { duration: 200 },
   });
-
+  const isPost = mode === "post";
   return (
-    <div className="flex flex-col text-right items-end">
+    <div
+      className={`flex flex-col text-right ${
+        !isPost ? "items-end" : "items-start"
+      }`}
+    >
       <div
         className={`divider w-full pb-0 mb-0 mt-1" + ${
           displayComment.total > 0 ? "" : "hidden"
@@ -153,7 +155,12 @@ export default function CommentsDisplay(
       {new_cmt.length > 0 &&
         transitionAnimation((style, item) => (
           <animated.div style={style}>
-            <div className="flex gap-1 border mb-1 text-xs" key={item.id}>
+            <div
+              className={`flex gap-1 border mb-1 ${
+                !isPost ? "text-xs" : "text-md"
+              }`}
+              key={item.id}
+            >
               <span className="px-2 bg-accent text-primary rounded-md">
                 NEW
               </span>{" "}
@@ -173,7 +180,9 @@ export default function CommentsDisplay(
       ) => (
         <div
           key={cmt.id}
-          className={`p-0 my-1 flex flex-nowrap justify-end items-center gap-2 text-xs `}
+          className={`p-0 my-1 flex flex-nowrap justify-end items-center gap-2 ${
+            !isPost ? "text-xs" : "text-sm"
+          }`}
         >
           <span
             className="p-1 cursor-pointer bg-gray-700 rounded-md hover:scale-105 transition-all text-white"
@@ -193,9 +202,7 @@ export default function CommentsDisplay(
           {selected.comment_id === cmt.id &&
             selected.data.comment_user_id !== user_id &&
             (
-              <div
-                onClick={() => selectReplyHandler(cmt)}
-              >
+              <div onClick={() => selectReplyHandler(cmt)}>
                 <MessageCircleX size={16} color="hsl(var(--accent))" />
               </div>
             )}
@@ -274,6 +281,3 @@ export default function CommentsDisplay(
     </div>
   );
 }
-// setCmts(
-//   displayComment.less.filter((cmt) => !(new_cmt.map((c) => c.id).includes(cmt.id))
-//   ),

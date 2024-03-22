@@ -11,7 +11,7 @@ export default async function Page(
 ) {
   const step: string | string[] | undefined = searchParams.mode;
   return (
-    <div className="mx-5 my-5">
+    <div className="mx-auto ">
       {step
         ? (step === "post" || step === "question")
           ? (step === "post" ? <PostForm /> : <QuestionForm />)

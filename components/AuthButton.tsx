@@ -11,26 +11,29 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { hideLoading, showLoading } from "@/utils/loading.service";
+import nProgress from "nprogress";
+import { toast } from "react-toastify";
 
 export default function AuthButton() {
   const [log, setLog] = useState<User | null>(null);
   const router = useRouter();
+  const [refetch, setRefetch] = useState(true);
 
   useEffect(() => {
     const supabase = createClientComponentClient();
-    supabase.auth.getUser()
-      .then((data) => {
-        setLog(data.data.user);
-      });
-  }, []);
+    supabase.auth.getUser().then((data) => setLog(data.data.user));
+  }, [refetch]);
 
   const onSubmit = () => {
-    showLoading();
     signOut().finally(() => {
       router.replace("/");
-      router.refresh();
+      nProgress.done();
+
+      setRefetch(!refetch);
+      toast.info("you have signed out");
     });
   };
+
   return log
     ? (
       <div className="flex py-3 max-h-9 items-center gap-4">
@@ -38,7 +41,7 @@ export default function AuthButton() {
           <AvatarImage
             className="cursor-pointer"
             onClick={() => {
-              showLoading()
+              showLoading();
               router.push("/profile");
             }}
             src={`https://gravatar.com/avatar/${
@@ -48,7 +51,10 @@ export default function AuthButton() {
           <AvatarFallback>{log.email?.charAt(0)}</AvatarFallback>
         </Avatar>
         <form action={onSubmit}>
-          <button className="py-2 px-4 rounded-md no-underline bg-btn-background hover:bg-btn-background-hover">
+          <button
+            className="py-2 px-4 rounded-md no-underline bg-btn-background hover:bg-hslvar"
+            onClick={() => nProgress.start()}
+          >
             Logout
           </button>
         </form>
@@ -56,6 +62,7 @@ export default function AuthButton() {
     )
     : (
       <Link
+        prefetch
         href="/login"
         className="py-2 px-3 flex rounded-md no-underline bg-btn-background hover:bg-primary hover:text-primary-foreground transition-all"
       >

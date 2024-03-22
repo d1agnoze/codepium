@@ -1,5 +1,6 @@
 "use server";
 
+import StopLoading from "@/components/stoploading";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { DEFAULT_AVATAR } from "@/defaults/profile";
@@ -47,6 +48,7 @@ export default async function Page() {
             <CardTitle>{user?.display_name}</CardTitle>
             <CardDescription>@{user?.user_name}</CardDescription>
           </Card>
+          <StopLoading />
         </div>
       </div>
       <div className="container">

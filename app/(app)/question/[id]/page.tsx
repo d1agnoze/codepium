@@ -70,11 +70,11 @@ export default async function Page({ params }: { params: { id: string } }) {
   if (user != null && answers) {
     const { data: vote_ans, error: vote_ans_err } = await supabase
       .from("get_vote_answer")
-      .select("thread_ref, direction")
+      .select("thread_ref, user_status")
       .eq("source_ref", params.id)
       .eq("sender", user?.id ?? "")
       .in("thread_ref", [...(answers!.map((ans) => ans.thread_ref.toString()))])
-      .returns<{ thread_ref: string; direction: boolean }[]>();
+      .returns<{ thread_ref: string; user_status: VoteEnum }[]>();
 
     const { data: vote_ques, error: vote_ques_err } = await supabase.from(
       "get_vote_answer",
@@ -82,7 +82,7 @@ export default async function Page({ params }: { params: { id: string } }) {
       "sender",
       user?.id ?? "",
     ).eq("thread_ref", params.id).limit(1)
-      .returns<{ direction: boolean }[]>();
+      .returns<{ direction: VoteEnum }[]>();
 
     if (vote_ans_err || vote_ques_err || !vote_ques || !vote_ans) {
       throw new Error("Failed to fetch votes");
@@ -91,9 +91,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     default_prev_vote_ans = calculateVotes(vote_ans, answers);
 
     if (vote_ques != null && vote_ques.length > 0) {
-      default_prev_vote_ques = vote_ques[0].direction
-        ? VoteEnum.up
-        : VoteEnum.down;
+      default_prev_vote_ques = vote_ques[0].direction;
     }
   }
 

@@ -4,7 +4,6 @@ import { commentSchema } from "@/schemas/comment.schema";
 import { voteSchema } from "@/schemas/vote.schema";
 import { comment } from "@/types/comment.type";
 import { MessageObject } from "@/types/message.route";
-import { Vote } from "@/types/vote.type";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 
@@ -25,7 +24,6 @@ export async function CreateComment(
 
   // validation FAILED
   if (!validated.success) {
-    console.log(validated.error.message);
     return { message: validated.error.message, ok: false };
   }
 
@@ -72,7 +70,7 @@ export async function CreateComment(
   return res;
 }
 
-export async function createVote(_: any, formData: FormData): Promise<MessageObject> {
+export async function createVote(formData: FormData): Promise<MessageObject> {
   const supabase = createServerActionClient({ cookies: () => cookies() });
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -87,6 +85,7 @@ export async function createVote(_: any, formData: FormData): Promise<MessageObj
     impact: formData.get("impact"),
     direction: formData.get("direction"),
     source_id: formData.get("source_id"),
+    final_stat: formData.get("final_stat"),
   });
 
   if (!validated.success) {
@@ -100,18 +99,27 @@ export async function createVote(_: any, formData: FormData): Promise<MessageObj
       code: 400,
     };
   }
-  console.log(validated.data);
 
-  // const { data, error } = await supabase.rpc("create_vote", {
-  //   mode: validated.data.mode,
-  //   user_id: validated.data.user_id,
-  //
-  //   thread_id: validated.data.thread_id,
-  //   source_id: validated.data.source_id,
-  //
-  //   direction: validated.data.direction.toString(),
-  //   impact: 1,
-  // }).select();
+  const { data, error } = await supabase.rpc("create_vote", {
+    mode: validated.data.mode,
+    user_id: validated.data.user_id,
+
+    thread_id: validated.data.thread_id,
+    source_id: validated.data.source_id,
+
+    direct: validated.data.direction,
+    impact: validated.data.impact,
+    final_stat: validated.data.final_stat,
+  }).select();
+
+  if (error || data == null) {
+    console.log(error);
+    return {
+      message: "Internal Server Error: Failed to process the request",
+      ok: false,
+      code: 500,
+    };
+  }
 
   return { message: "Success", ok: true };
 }
