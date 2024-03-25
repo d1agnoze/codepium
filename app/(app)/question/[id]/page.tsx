@@ -3,6 +3,7 @@
 import AnswerComponent from "@/components/AnswerComponent";
 import CommentComponent from "@/components/CommentComponent";
 import VotingComponent from "@/components/VotingComponent";
+import UserAction from "@/components/edit/UserActionComponent";
 import AnswerDisplay from "@/components/ui/AnswerDisplayComponent";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -126,6 +127,12 @@ export default async function Page({ params }: { params: { id: string } }) {
                   {fromUser ? "You" : "@" + data!.user_name} -{" "}
                   {moment(data!.created_at).fromNow()}
                 </p>
+                <UserAction
+                  className={"ml-auto"}
+                  mode="question"
+                  visible={fromUser}
+                  id={data!.id}
+                />
               </div>
               <section className="w-full flex gap-1">
                 {tags?.slice(0, 2).map((tag) => (

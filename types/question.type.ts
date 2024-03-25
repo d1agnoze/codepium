@@ -12,4 +12,8 @@ export type Question = {
   user_id?: string;
   user_name?: string;
   email?: string;
+
+  isArchieved?: boolean;
+  archieveReason?: string;
+  isEdited?: boolean;
 };

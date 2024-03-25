@@ -18,6 +18,7 @@ import {
 } from "./tooltip";
 import CommentComponent from "../CommentComponent";
 import { VoteEnum } from "@/enums/vote.enum";
+import UserAction from "../edit/UserActionComponent";
 
 export default function AnswerDisplay(
   { ans, current_user_id, user_prev_vote }: {
@@ -72,6 +73,12 @@ export default function AnswerDisplay(
             {fromUser.current ? "You" : "@" + ans.user_name} -{" "}
             {moment(new Date(ans.created_at)).fromNow()}
           </p>
+          <UserAction
+            className={"ml-auto"}
+            mode="answer"
+            visible={ans.user_id === current_user_id}
+            id={ans!.thread_ref}
+          />
         </div>
         <div className="pt-3 flex-grow">
           <Markdown>{ans.content}</Markdown>

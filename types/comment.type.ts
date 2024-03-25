@@ -14,4 +14,7 @@ export type comment = {
 
   mode: string;
   host_id: string;
+
+  isDeleted?: boolean;
+  isEdited?: boolean;
 };

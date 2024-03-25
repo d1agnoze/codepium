@@ -8,7 +8,7 @@ import {
   UserRound,
 } from "lucide-react";
 import Link from "next/link";
-import '@mdxeditor/editor/style.css'
+import "@mdxeditor/editor/style.css";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,9 +16,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <div className="drawer lg:drawer-open">
         <input id="drawer" type="checkbox" className="drawer-toggle" />
         <div className="drawer-content flex flex-col">
-          <label htmlFor="drawer" className="drawer-button lg:hidden 
+          <label
+            htmlFor="drawer"
+            className="drawer-button lg:hidden 
             max-sm:absolute top-[-2.8rem] left-1
-            " >
+            "
+          >
             <PanelRightOpen size={"1.7rem"} />
           </label>
           {children}
@@ -36,6 +39,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <Link
                 href={"/profile/create"}
                 className="flex flex-col justify-center items-center border-1"
+                prefetch={true}
               >
                 <PlusSquare />
                 <p>Post / Ask</p>

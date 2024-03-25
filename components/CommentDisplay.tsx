@@ -14,6 +14,10 @@ import {
 } from "./ui/pagination";
 import { paginationCalulator as paginationCalculate } from "@/utils/pagination.utils";
 import { toast } from "react-toastify";
+import UserAction from "./edit/UserActionComponent";
+import { allowedNodeEnvironmentFlags } from "process";
+import moment from "moment";
+import { DEFAULT_COMMENT_EDIT_WINDOW } from "@/defaults/parameter_configuration";
 
 export interface SelectedHandler {
   data: {
@@ -184,6 +188,32 @@ export default function CommentsDisplay(
             !isPost ? "text-xs" : "text-sm"
           }`}
         >
+          <UserAction
+            visible={cmt.user_id === user_id &&
+              (moment(new Date(cmt.created_at)).isBefore(
+                DEFAULT_COMMENT_EDIT_WINDOW,
+                "minute",
+              ))}
+            mode={"comment"}
+            id={cmt.id}
+            iconSize={15}
+            allowDelete={{
+              allow: (moment(new Date(cmt.created_at)).isBefore(
+                DEFAULT_COMMENT_EDIT_WINDOW,
+                "minute",
+              )),
+              message:
+                "You can not edit or delete your comment after 5 minutes",
+            }}
+            allowEdit={{
+              allow: (moment(new Date(cmt.created_at)).isBefore(
+                DEFAULT_COMMENT_EDIT_WINDOW,
+                "minute",
+              )),
+              message:
+                "You can not edit or delete your comment after 5 minutes",
+            }}
+          />
           <span
             className="p-1 cursor-pointer bg-gray-700 rounded-md hover:scale-105 transition-all text-white"
             onClick={() => selectReplyHandler(cmt)}

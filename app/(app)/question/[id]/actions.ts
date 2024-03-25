@@ -18,13 +18,13 @@ export async function AnswerQuestion(
   });
 
   if (!validated.success) {
-    console.log(validated.error);
     return { message: "Bad request: " + validated.error.message, ok: true };
   }
 
   if (validated.data.user_id !== user?.id) {
     return { message: "Bad request: User id does not match", ok: true };
   }
+  //TODO: check for IsArchieved
 
   // Fetch data from supabse using function call
   const { data: ans_id, error } = await Supabase()

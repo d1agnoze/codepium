@@ -23,9 +23,7 @@ export async function CreateComment(
   });
 
   // validation FAILED
-  if (!validated.success) {
-    return { message: validated.error.message, ok: false };
-  }
+  if (!validated.success) { return { message: validated.error.message, ok: false }; }
 
   //User id mismatch
   if (!user || validated.data.user_id !== user?.id) {

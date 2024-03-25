@@ -10,7 +10,7 @@ import { signOut } from "@/app/login/actions";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { hideLoading, showLoading } from "@/utils/loading.service";
+import { showLoading } from "@/utils/loading.service";
 import nProgress from "nprogress";
 import { toast } from "react-toastify";
 
