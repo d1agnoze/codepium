@@ -213,6 +213,7 @@ export default function CommentsDisplay(
               message:
                 "You can not edit or delete your comment after 5 minutes",
             }}
+            prevContent={cmt.content}
           />
           <span
             className="p-1 cursor-pointer bg-gray-700 rounded-md hover:scale-105 transition-all text-white"

@@ -73,11 +73,13 @@ export default function AnswerDisplay(
             {fromUser.current ? "You" : "@" + ans.user_name} -{" "}
             {moment(new Date(ans.created_at)).fromNow()}
           </p>
+          {ans.isEdited && <p className="text-xs text-gray-400">(Edited)</p>}
           <UserAction
             className={"ml-auto"}
             mode="answer"
             visible={ans.user_id === current_user_id}
             id={ans!.thread_ref}
+            prevContent={ans.content}
           />
         </div>
         <div className="pt-3 flex-grow">

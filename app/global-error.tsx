@@ -2,12 +2,18 @@
 
 import { Button } from "@/components/ui/button";
 import { DEFAULT_500_ICON } from "@/defaults/profile";
+import { hideLoading } from "@/utils/loading.service";
+import nProgress from "nprogress";
 import { useEffect } from "react";
 
 export default function Error(
   { error, reset }: { error: Error & { digest?: string }; reset: () => void },
 ) {
-  useEffect(() => console.error(error), [error]);
+  useEffect(() => {
+    hideLoading();
+    nProgress.done();
+    console.error(error);
+  }, [error]);
 
   return (
     <html>

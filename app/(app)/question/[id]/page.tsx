@@ -127,11 +127,15 @@ export default async function Page({ params }: { params: { id: string } }) {
                   {fromUser ? "You" : "@" + data!.user_name} -{" "}
                   {moment(data!.created_at).fromNow()}
                 </p>
+                {data?.isEdited && (
+                  <p className="text-xs text-gray-400">(Edited)</p>
+                )}
                 <UserAction
                   className={"ml-auto"}
                   mode="question"
                   visible={fromUser}
                   id={data!.id}
+                  editSite={"/profile/edit/question/" + data!.id}
                 />
               </div>
               <section className="w-full flex gap-1">

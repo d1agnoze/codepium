@@ -4,11 +4,17 @@ import { useEffect, useState } from "react";
 import { Badge } from "./ui/badge";
 import { cn } from "@/lib/utils";
 
+/**
+ * @deprecated this component is not suitable for editing and will be removed soon
+ */
 export default function ExpertiseSelector(
-  { value }: { value: (arg: Expertise[]) => void },
+  { value, defaultValues }: {
+    value: (arg: Expertise[]) => void;
+    defaultValues?: Expertise[];
+  },
 ) {
   const { data, error, loading } = useFetchCurrent("general/expertises");
-  const [selected, setSelected] = useState<Expertise[]>([]);
+  const [selected, setSelected] = useState<Expertise[]>(defaultValues ?? []);
   const [columns, setColumns] = useState<Expertise[]>([]);
   const itemsPerColumn = 10;
   const router = useRouter();
