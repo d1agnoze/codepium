@@ -19,6 +19,13 @@ import {
 import CommentComponent from "../CommentComponent";
 import { VoteEnum } from "@/enums/vote.enum";
 import UserAction from "../edit/UserActionComponent";
+import { Badge } from "./badge";
+import {
+  UnverifyAnswer,
+  VerifyAnswer,
+} from "@/app/(app)/question/[id]/actions";
+import { toast } from "react-toastify";
+import nProgress from "nprogress";
 
 export default function AnswerDisplay(
   { ans, current_user_id, user_prev_vote }: {
@@ -28,6 +35,27 @@ export default function AnswerDisplay(
   },
 ): JSX.Element {
   const fromUser = useRef(ans.user_id === current_user_id);
+
+  const vertify = async (id: string, verifyMode: "unverify" | "verify") => {
+    nProgress.start();
+    if (verifyMode === "verify") {
+      VerifyAnswer(id)
+        .then((res) => {
+          toast.success(res.message);
+          location.reload();
+        }).catch((err) => toast.error(err.message))
+        .finally(() => nProgress.done());
+    }
+    if (verifyMode === "unverify") {
+      UnverifyAnswer(id)
+        .then((res) => {
+          toast.success(res.message);
+          location.reload();
+        }).catch((err) => toast.error(err.message))
+        .finally(() => nProgress.done());
+    }
+  };
+
   return (
     <div className="w-full bg-hslvar rounded-lg p-5 flex gap-3">
       <div className="w-[30px] items-center flex flex-col justify-start">
@@ -74,6 +102,24 @@ export default function AnswerDisplay(
             {moment(new Date(ans.created_at)).fromNow()}
           </p>
           {ans.isEdited && <p className="text-xs text-gray-400">(Edited)</p>}
+          {!ans.status && fromUser &&
+            (
+              <Badge
+                className="text-xs hover:bg-accent cursor-pointer"
+                onClick={() => vertify(ans.thread_ref, "verify")}
+              >
+                Mark as best answer
+              </Badge>
+            )}
+          {ans.status && fromUser &&
+            (
+              <Badge
+                className="text-xs bg-accent hover:bg-primary cursor-pointer"
+                onClick={() => vertify(ans.thread_ref, "unverify")}
+              >
+                Unmark this answer
+              </Badge>
+            )}
           <UserAction
             className={"ml-auto"}
             mode="answer"

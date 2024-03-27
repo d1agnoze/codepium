@@ -2,6 +2,8 @@
 import { answerSchema } from "@/schemas/answer-submit.schema";
 import { MessageObject } from "@/types/message.route";
 import Supabase from "@/utils/supabase/server-action";
+import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 
 export async function AnswerQuestion(
   _: any,
@@ -39,4 +41,17 @@ export async function AnswerQuestion(
   }
 
   return { message: ans_id, ok: true };
+}
+
+export async function VerifyAnswer(id: string): Promise<MessageObject> {
+  const supabase = createServerActionClient({ cookies: () => cookies() });
+  const { error } = await supabase.rpc("verify_answer", { ans_id: id });
+  if (error) throw new Error(error.message);
+  return { message: "answer verified", ok: true };
+}
+export async function UnverifyAnswer(id: string): Promise<MessageObject> {
+  const supabase = createServerActionClient({ cookies: () => cookies() });
+  const { error } = await supabase.rpc("unverify_answer", { ans_id: id });
+  if (error) throw new Error(error.message);
+  return { message: "answer unverified", ok: true };
 }

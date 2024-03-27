@@ -82,6 +82,7 @@ export default function PostForm() {
       router.replace("/post/" + state.message);
       toast.success("Article posted");
     }
+    hideLoading();
   }, [state]);
 
   const submit = (values: z.infer<typeof postSchema>) => {
@@ -94,7 +95,7 @@ export default function PostForm() {
   };
 
   return (
-    <div>
+    <div className="mx-4">
       <h1 className="text-2xl font-semibold mb-5">Create an article</h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(submit)} className="space-y-8">

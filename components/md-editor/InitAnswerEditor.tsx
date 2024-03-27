@@ -7,8 +7,6 @@ import {
   codeMirrorPlugin,
   ConditionalContents,
   CreateLink,
-  diffSourcePlugin,
-  DiffSourceToggleWrapper,
   headingsPlugin,
   InsertCodeBlock,
   linkDialogPlugin,

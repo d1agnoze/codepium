@@ -1,6 +1,7 @@
 "use server";
 
 import CommentComponent from "@/components/CommentComponent";
+import UserAction from "@/components/edit/UserActionComponent";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -48,7 +49,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   return (
     <div className="max-md:w-full w-[70%] border-box px-10">
-      {user &&
+      {!user &&
         (
           <div className="flex gap-1 w-full items-center justify-center bg-accent mb-7 py-2 rounded-md">
             <Info size={20} />
@@ -75,6 +76,13 @@ export default async function Page({ params }: { params: { id: string } }) {
                 {post.user_id == user?.id ? "You" : "@" + post.user_name} -{" "}
                 {moment(post!.created_at).fromNow()}
               </p>
+              <UserAction
+                className={"ml-auto"}
+                mode="post"
+                visible={user?.id == post.user_id}
+                id={post.id}
+                editSite={"/profile/edit/question/" + post.id}
+              />
             </div>
             <section className="w-full flex gap-1 pl-10">
               {tags?.slice(0, 4).map((tag) => (
@@ -85,7 +93,9 @@ export default async function Page({ params }: { params: { id: string } }) {
               {(tags && tags.length > 3) &&
                 <pre className="text-md">...</pre>}
             </section>
-            <h1 className="font-semibold text-2xl text-center">{post.title}</h1>
+            <h1 className="font-semibold text-2xl text-center mt-3">
+              {post.title}
+            </h1>
             <main className="mt-1">
               <Markdown className={"text-md"}>{post.content}</Markdown>
             </main>

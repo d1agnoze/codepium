@@ -3,7 +3,9 @@
 import { deleteSchema } from "@/schemas/delete-thread.schema";
 import { editThreadSchema } from "@/schemas/edit-thread-2.schema";
 import { editSchema } from "@/schemas/edit-thread.schema";
+import { comment } from "@/types/comment.type";
 import { MessageObject } from "@/types/message.route";
+import { isAfterEditWins } from "@/utils/checkdate";
 import { schemaChecker } from "@/utils/formDataChecker";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
@@ -44,13 +46,46 @@ export async function EditThread(formData: FormData): Promise<MessageObject> {
  * @returns {MessageObject} message object {message, ok}
  */
 export async function DeleteThread(formData: FormData): Promise<MessageObject> {
+  const supabase = createServerActionClient({ cookies: () => cookies() });
+  const { data: { user } } = await supabase.auth.getUser();
+
   const validate = deleteSchema.safeParse({
     id: formData.get("id"),
     mode: formData.get("mode"),
+    content: formData.get("content"),
   });
   if (!validate.success) throw new Error(validate.error.message);
 
-  return { message: "success - " + validate.data.id + "deleted", ok: true };
+  if (validate.data.mode === "comment") {
+    const { data, error } = await supabase.from("comment")
+      .select().eq("id", validate.data.id)
+      .single<comment>();
+
+    if (error || !data) throw new Error(error.message);
+
+    if (data.user_id !== user?.id) {
+      throw new Error("Bad request: Invalid identity");
+    }
+
+    if (isAfterEditWins(data.created_at)) {
+      throw new Error("Bad request: Edit windows expired");
+    }
+  }
+
+  if (validate.data.mode !== "question") {
+    const { error } = await supabase
+      .rpc("delete_" + validate.data.mode, { del_id: validate.data.id });
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabase
+      .rpc("delete_question", {
+        del_id: validate.data.id,
+        reason: validate.data.content,
+      });
+    if (error) throw new Error(error.message);
+  }
+
+  return { message: "Action completed", ok: true };
 }
 
 /**

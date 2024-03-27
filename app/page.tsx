@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DEFAULT_HERO_IMAGE } from "@/defaults/profile";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
+import Link from "next/link";
 
 export default async function Index() {
   const supabase = createServerComponentClient({ cookies: () => cookies() });
@@ -35,10 +36,12 @@ export default async function Index() {
       </div>
       <div className="flex flex-grow">
         <div>
-          <button className="btn btn-accent">Browse Questions</button>
+          <Link className="btn btn-accent" href={"/question"}>
+            Browse Questions
+          </Link>
         </div>
         <div>
-          <button className="btn btn-info">Browse Articles</button>
+          <Link className="btn btn-info" href={"/post"}>Browse Articles</Link>
         </div>
       </div>
     </div>

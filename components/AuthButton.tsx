@@ -13,12 +13,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { showLoading } from "@/utils/loading.service";
 import nProgress from "nprogress";
 import { toast } from "react-toastify";
+import userService from "@/services/user.services";
 
 export default function AuthButton() {
   const [log, setLog] = useState<User | null>(null);
   const router = useRouter();
   const [refetch, setRefetch] = useState(true);
 
+  useEffect(() => {
+    userService.subscribe((data) => {
+      if (data) setLog(data);
+    });
+  }, []);
   useEffect(() => {
     const supabase = createClientComponentClient();
     supabase.auth.getUser().then((data) => setLog(data.data.user));

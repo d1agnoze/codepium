@@ -76,6 +76,8 @@ export default function AnswerComponent(props: Props) {
       } else {
         toast.error(state.message);
       }
+      form.reset();
+      ref.current?.setMarkdown("");
       hideLoading();
     }
   }, [state]);

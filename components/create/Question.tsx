@@ -79,6 +79,7 @@ export default function QuestionForm() {
     if (state.message.trim() != "" && state.ok) {
       console.log(state.message);
       router.replace("/question/" + state.message);
+      hideLoading();
       toast.success("Question submitted");
     }
   }, [state]);
@@ -93,7 +94,7 @@ export default function QuestionForm() {
   };
 
   return (
-    <div>
+    <div className="mx-4">
       <h1 className="text-2xl font-semibold mb-5">Create a question thread</h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(submit)} className="space-y-8">

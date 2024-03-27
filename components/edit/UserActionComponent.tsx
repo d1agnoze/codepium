@@ -34,10 +34,12 @@ import { hideLoading, showLoading } from "@/utils/loading.service";
 import { Input } from "../ui/input";
 import { SubmitButton } from "../SubmitButton";
 import { useState } from "react";
+import { Label } from "../ui/label";
 
 const UserAction = (prop: Prop) => {
   const router = useRouter();
   const [edit_content, set_edit_content] = useState(prop.prevContent);
+  const [openAchieve, setOpenAchieve] = useState(false);
 
   /** Handler for edit action
    * @function editHandler
@@ -57,19 +59,24 @@ const UserAction = (prop: Prop) => {
   const deleteHandler = (
     _: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ) => {
-    const payload = new FormData();
-    payload.append("id", prop.id);
-    payload.append("mode", prop.mode);
-
-    DeleteThread(payload)
-      .then((data: MessageObject) => {
-        showLoading();
-        sessionStorage.clear();
-        toast.success(data.message);
-        router.replace("/");
-      })
-      .catch((err) => toast.error(err.message))
-      .finally(() => hideLoading());
+    if (prop.mode === "question") {
+      setOpenAchieve(true);
+    } else {
+      const payload = new FormData();
+      payload.append("id", prop.id);
+      payload.append("mode", prop.mode);
+      DeleteThread(payload)
+        .then((data: MessageObject) => {
+          showLoading();
+          sessionStorage.clear();
+          toast.success(data.message);
+          if (prop.mode === "post" || prop.mode === "question") {
+            router.replace("/");
+          } else location.reload();
+        })
+        .catch((err) => toast.error(err.message))
+        .finally(() => hideLoading());
+    }
   };
 
   /**
@@ -93,6 +100,7 @@ const UserAction = (prop: Prop) => {
       toast.success(res.message);
       location.reload();
     } catch (err: any) {
+      console.log(err.message);
       toast.error(err.message);
     }
   };
@@ -109,6 +117,26 @@ const UserAction = (prop: Prop) => {
     router.push(prop.editSite);
   };
 
+  /**
+   * Handler for delete question
+   * @function deleteQuestion
+   * @param {FormDate} payload
+   * @returns void
+   */
+  const deleteQuestion = (payload: FormData) => {
+    payload.append("id", prop.id);
+    payload.append("mode", prop.mode);
+    setOpenAchieve(false);
+    DeleteThread(payload)
+      .then((data: MessageObject) => {
+        showLoading();
+        toast.success(data.message);
+        router.replace("/");
+      })
+      .catch((err) => toast.error(err.message))
+      .finally(() => hideLoading());
+  };
+
   return (
     <div className={`${!prop.visible && "hidden"} ${prop.className}`}>
       <DropdownMenu>
@@ -118,82 +146,90 @@ const UserAction = (prop: Prop) => {
             size={prop.iconSize ?? 20}
           />
         </DropdownMenuTrigger>
+
         <DropdownMenuContent className="">
           <DropdownMenuLabel>Thread actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <Dialog>
-            <DialogTrigger className="w-full">
-              <DropdownMenuItem
-                onClick={editHandler}
-                onSelect={(e) => e.preventDefault()}
-                disabled={prop.allowEdit?.allow === false}
-                className="w-full"
-              >
+          <DropdownMenuItem
+            onClick={editHandler}
+            onSelect={(e) => e.preventDefault()}
+            disabled={prop.allowEdit?.allow === false}
+            className="w-full"
+          >
+            <Dialog>
+              <DialogTrigger>
                 <TooltipProvider>
-                  <Tooltip open={prop.allowEdit?.allow === false && undefined}>
+                  <Tooltip>
                     <TooltipTrigger className="w-full">
                       <div className="w-full flex gap-1 flex-start">
                         <Pencil size={20} />
                         <p className="ml-3">Edit</p>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent
-                      side="bottom"
-                      sideOffset={10}
-                      className="bg-accent text-secondary"
-                    >
-                      <p>{prop.allowEdit?.message}</p>
-                    </TooltipContent>
+                    {prop.allowEdit?.message &&
+                      (
+                        <TooltipContent
+                          side="bottom"
+                          sideOffset={10}
+                          className="bg-accent text-secondary"
+                        >
+                          <p>{prop.allowEdit?.message}</p>
+                        </TooltipContent>
+                      )}
                   </Tooltip>
                 </TooltipProvider>
-              </DropdownMenuItem>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Edit Thread</DialogTitle>
-                <DialogDescription>
-                  {prop.prevContent
-                    ? (
-                      <div className="flex flex-col gap-2">
-                        <p>
-                          This action cannot be undone. You will not get
-                          reputation for updating content of this thread
-                        </p>
-                        <form action={submitEdit}>
-                          <Input
-                            type="text"
-                            name="content"
-                            value={edit_content}
-                            onChange={(e) => set_edit_content(e.target.value)}
-                          />
-                          <SubmitButton className="mt-3" />
-                        </form>
-                      </div>
-                    )
-                    : <p>Navigate to edit page?</p>}
-                </DialogDescription>
-              </DialogHeader>
-              {!prop.prevContent && prop.editSite &&
-                (
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => redirectHandler()}>
-                      Yes
-                    </Button>
-                    <DialogClose asChild>
-                      <Button variant="outline">Cancel</Button>
-                    </DialogClose>
-                  </DialogFooter>
-                )}
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Thread</DialogTitle>
+                  <DialogDescription>
+                    {prop.prevContent
+                      ? (
+                        <div className="flex flex-col gap-2">
+                          <p>
+                            This action cannot be undone. You will not get
+                            reputation for updating content of this thread
+                          </p>
+                          <form action={submitEdit}>
+                            <Input
+                              type="text"
+                              name="content"
+                              value={edit_content}
+                              onChange={(e) => set_edit_content(e.target.value)}
+                            />
+                            <SubmitButton className="mt-3" />
+                          </form>
+                        </div>
+                      )
+                      : <p>Navigate to edit page?</p>}
+                  </DialogDescription>
+                </DialogHeader>
+                {!prop.prevContent && prop.editSite &&
+                  (
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => redirectHandler()}
+                      >
+                        Yes
+                      </Button>
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  )}
+              </DialogContent>
+            </Dialog>
+          </DropdownMenuItem>
           {/* DELETE BUTTON */}
 
           <DropdownMenuItem
             onSelect={(e) => e.preventDefault()}
             disabled={prop.allowDelete?.allow === false}
+            className="w-full"
           >
             <Dialog>
-              <DialogTrigger disabled={prop.allowDelete?.allow === false}>
+              <DialogTrigger>
                 <TooltipProvider>
                   <Tooltip
                     open={prop.allowDelete?.allow === false && undefined}
@@ -208,13 +244,15 @@ const UserAction = (prop: Prop) => {
                         } this thread`}
                       </p>
                     </TooltipTrigger>
-                    <TooltipContent
-                      side="bottom"
-                      sideOffset={10}
-                      className="bg-accent text-secondary"
-                    >
-                      <p>{prop.allowDelete?.message}</p>
-                    </TooltipContent>
+                    {prop.allowDelete?.message && (
+                      <TooltipContent
+                        side="bottom"
+                        sideOffset={10}
+                        className="bg-accent text-secondary"
+                      >
+                        <p>{prop.allowDelete?.message}</p>
+                      </TooltipContent>
+                    )}
                   </Tooltip>
                 </TooltipProvider>
               </DialogTrigger>
@@ -237,6 +275,28 @@ const UserAction = (prop: Prop) => {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <Dialog
+        open={openAchieve}
+        onOpenChange={() => setOpenAchieve(!openAchieve)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>You are about to archieve this question</DialogTitle>
+            <DialogDescription>
+              <form action={deleteQuestion}>
+                <div className="flex flex-col gap-3 my-3">
+                  <Label htmlFor="content" className="text-red-300">
+                    Specify the archieve reason, this question will later be
+                    hidden from system
+                  </Label>
+                  <Input type="text" name="content" />
+                </div>
+                <SubmitButton className="mt-3" />
+              </form>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

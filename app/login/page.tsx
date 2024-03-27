@@ -29,6 +29,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { INITIAL_MESSAGE_OBJECT, MessageObject } from "@/types/message.route";
 import { hideLoading, showLoading } from "@/utils/loading.service";
+import userService from "@/services/user.services";
 
 export default function Login() {
   const supabase = createClientComponentClient();
@@ -57,7 +58,12 @@ export default function Login() {
 
   useEffect(() => {
     if (state.message !== "") {
-      state.ok ? toast.success(state.message) : toast.error(state.message);
+      if (state.ok) {
+        supabase.auth.getUser().then((res) => userService.next(res.data.user));
+        toast.success(state.message);
+      } else {
+        toast.error(state.message);
+      }
       router.replace("/");
     }
     if (signUpState.message !== "") {

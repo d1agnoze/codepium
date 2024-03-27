@@ -15,9 +15,8 @@ import {
 import { paginationCalulator as paginationCalculate } from "@/utils/pagination.utils";
 import { toast } from "react-toastify";
 import UserAction from "./edit/UserActionComponent";
-import { allowedNodeEnvironmentFlags } from "process";
-import moment from "moment";
-import { DEFAULT_COMMENT_EDIT_WINDOW } from "@/defaults/parameter_configuration";
+import { DEFAULT_COMMENT_EDIT_MSG } from "@/defaults/parameter_configuration";
+import { isAfterEditWins } from "@/utils/checkdate";
 
 export interface SelectedHandler {
   data: {
@@ -165,6 +164,21 @@ export default function CommentsDisplay(
               }`}
               key={item.id}
             >
+              <UserAction
+                visible={true}
+                mode={"comment"}
+                id={item.id}
+                iconSize={15}
+                allowDelete={{
+                  allow: isAfterEditWins(item.created_at),
+                  message: DEFAULT_COMMENT_EDIT_MSG,
+                }}
+                allowEdit={{
+                  allow: isAfterEditWins(item.created_at),
+                  message: DEFAULT_COMMENT_EDIT_MSG,
+                }}
+                prevContent={item.content}
+              />
               <span className="px-2 bg-accent text-primary rounded-md">
                 NEW
               </span>{" "}
@@ -189,32 +203,21 @@ export default function CommentsDisplay(
           }`}
         >
           <UserAction
-            visible={cmt.user_id === user_id &&
-              (moment(new Date(cmt.created_at)).isBefore(
-                DEFAULT_COMMENT_EDIT_WINDOW,
-                "minute",
-              ))}
+            visible={isAfterEditWins(cmt.created_at)}
             mode={"comment"}
             id={cmt.id}
             iconSize={15}
             allowDelete={{
-              allow: (moment(new Date(cmt.created_at)).isBefore(
-                DEFAULT_COMMENT_EDIT_WINDOW,
-                "minute",
-              )),
-              message:
-                "You can not edit or delete your comment after 5 minutes",
+              allow: isAfterEditWins(cmt.created_at),
+              message: DEFAULT_COMMENT_EDIT_MSG,
             }}
             allowEdit={{
-              allow: (moment(new Date(cmt.created_at)).isBefore(
-                DEFAULT_COMMENT_EDIT_WINDOW,
-                "minute",
-              )),
-              message:
-                "You can not edit or delete your comment after 5 minutes",
+              allow: isAfterEditWins(cmt.created_at),
+              message: DEFAULT_COMMENT_EDIT_MSG,
             }}
             prevContent={cmt.content}
           />
+          {cmt.isEdited && <span className="text-gray-500">(Edited)</span>}
           <span
             className="p-1 cursor-pointer bg-gray-700 rounded-md hover:scale-105 transition-all text-white"
             onClick={() => selectReplyHandler(cmt)}

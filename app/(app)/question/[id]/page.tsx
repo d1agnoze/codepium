@@ -17,6 +17,7 @@ import { VoteMode } from "@/enums/vote-mode.enum";
 import { VoteEnum } from "@/enums/vote.enum";
 import { Answer } from "@/types/answer.type";
 import { Question } from "@/types/question.type";
+import { hideLoading } from "@/utils/loading.service";
 import { calculateVotes } from "@/utils/vote.utils";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { sha256 } from "js-sha256";
@@ -59,16 +60,17 @@ export default async function Page({ params }: { params: { id: string } }) {
   if (tag_err) console.error(tag_err);
 
   //get answers from supabase
-  const { data: answers, error: ans_err } = await supabase.from(
-    "get_answer_full",
-  ).select().returns<Answer[]>();
+  const { data: answers, error: ans_err } = await supabase
+    .from("get_answer_full").select()
+    .eq("source_ref", params.id)
+    .returns<Answer[]>();
 
   if (ans_err) console.error(ans_err);
 
   let default_prev_vote_ans: { thread_ref: string; direction: VoteEnum }[] = [];
   let default_prev_vote_ques: VoteEnum = VoteEnum.neutral;
 
-  if (user != null && answers) {
+  if (user != null && answers && answers.length > 0) {
     const { data: vote_ans, error: vote_ans_err } = await supabase
       .from("get_vote_answer")
       .select("thread_ref, user_status")
@@ -95,7 +97,6 @@ export default async function Page({ params }: { params: { id: string } }) {
       default_prev_vote_ques = vote_ques[0].direction;
     }
   }
-
   return (
     <div className="w-full box-border px-3 lg:px-32 mt-3 flex flex-col gap-1">
       <div className="w-full bg-hslvar px-4 py-5 rounded-lg">

@@ -29,6 +29,7 @@ import { toast } from "react-toastify";
 import Link from "next/link";
 import { modes } from "@/types/modes.type";
 import { comment } from "@/types/comment.type";
+import { isAfterEditWins } from "@/utils/checkdate";
 
 interface Prop {
   thread_id: string;
@@ -88,6 +89,7 @@ export default function CommentComponent(
     }
 
     if (isComment(state) && state.id != "") {
+      console.log(isAfterEditWins(state.created_at));
       setIsSubmiting(false);
       setNewComment((prev) => [...prev, state]);
       setOpenComment(false);
