@@ -1,11 +1,20 @@
 "use client";
 import { useEffect, useState } from "react";
 
-const useFetchCurrent = <T = any>(url: string) => {
+/**
+ * NOTE: useFetchCurrent
+ * custom hook for fetching data
+ *
+ * @param url
+ * @returns {data, loading, error}
+ * */
+const useFetchCurrent = <T = any,>(
+  url: string,
+): { data: T | undefined; loading: boolean; error: any | null } => {
   const urlBase = `/api/${url}`;
   const [data, setData] = useState<T>();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {

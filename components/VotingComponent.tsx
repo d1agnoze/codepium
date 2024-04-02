@@ -20,17 +20,15 @@ interface VotingProps {
   current_direction: VoteEnum;
 }
 
-export default function VotingComponent(
-  {
-    fromUser,
-    thread_id,
-    current_stars,
-    user_id,
-    mode,
-    source_id,
-    current_direction,
-  }: VotingProps,
-) {
+export default function VotingComponent({
+  fromUser,
+  thread_id,
+  current_stars,
+  user_id,
+  mode,
+  source_id,
+  current_direction,
+}: VotingProps) {
   const [vote, setVote] = useState<VoteEnum>(current_direction);
 
   const [star, setStar] = useState<number>(current_stars);

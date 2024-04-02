@@ -4,6 +4,7 @@ import AnswerComponent from "@/components/AnswerComponent";
 import CommentComponent from "@/components/CommentComponent";
 import VotingComponent from "@/components/VotingComponent";
 import UserAction from "@/components/edit/UserActionComponent";
+import { MarkdownComponents } from "@/components/react-markdown/Component";
 import AnswerDisplay from "@/components/ui/AnswerDisplayComponent";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -26,11 +27,15 @@ import moment from "moment";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+import rehypeRaw from "rehype-raw";
+import remarkGfm from "remark-gfm";
 
 export default async function Page({ params }: { params: { id: string } }) {
   const supabase = createServerComponentClient({ cookies: () => cookies() });
   //fetch question from supabase
-  const { data, error } = await supabase.from("get_question_full")
+  const { data, error } = await supabase
+    .from("get_question_full")
     .select()
     .eq("id", params.id)
     .returns<Question>()
@@ -38,14 +43,16 @@ export default async function Page({ params }: { params: { id: string } }) {
     .maybeSingle<Question>();
 
   //fetch user data
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   // check if the thread is from the current user
-  const fromUser = (data?.user_id != null && user?.id != null) &&
-    user?.id === data?.user_id;
+  const fromUser =
+    data?.user_id != null && user?.id != null && user?.id === data?.user_id;
 
   //error handling
-  if (error && data == null) {
+  if (error || data == null) {
     console.error(error);
     notFound();
   }
@@ -54,14 +61,16 @@ export default async function Page({ params }: { params: { id: string } }) {
   const { data: tags, error: tag_err } = await supabase
     .rpc("get_expertises_set", {
       uuids: data!.tag,
-    }).returns<Expertise[]>();
+    })
+    .returns<Expertise[]>();
 
   //another error handling
   if (tag_err) console.error(tag_err);
 
   //get answers from supabase
   const { data: answers, error: ans_err } = await supabase
-    .from("get_answer_full").select()
+    .from("get_answer_full")
+    .select()
     .eq("source_ref", params.id)
     .returns<Answer[]>();
 
@@ -76,15 +85,16 @@ export default async function Page({ params }: { params: { id: string } }) {
       .select("thread_ref, user_status")
       .eq("source_ref", params.id)
       .eq("sender", user?.id ?? "")
-      .in("thread_ref", [...(answers!.map((ans) => ans.thread_ref.toString()))])
+      .in("thread_ref", [...answers!.map((ans) => ans.thread_ref.toString())])
       .returns<{ thread_ref: string; user_status: VoteEnum }[]>();
 
-    const { data: vote_ques, error: vote_ques_err } = await supabase.from(
-      "get_vote_answer",
-    ).select("direction").eq("source_ref", params.id).eq(
-      "sender",
-      user?.id ?? "",
-    ).eq("thread_ref", params.id).limit(1)
+    const { data: vote_ques, error: vote_ques_err } = await supabase
+      .from("get_vote_answer")
+      .select("direction")
+      .eq("source_ref", params.id)
+      .eq("sender", user?.id ?? "")
+      .eq("thread_ref", params.id)
+      .limit(1)
       .returns<{ direction: VoteEnum }[]>();
 
     if (vote_ans_err || vote_ques_err || !vote_ques || !vote_ans) {
@@ -98,7 +108,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     }
   }
   return (
-    <div className="w-full box-border px-3 lg:px-32 mt-3 flex flex-col gap-1">
+    <div className="w-full box-border px-3 lg:px-10 flex flex-col gap-1">
       <div className="w-full bg-hslvar px-4 py-5 rounded-lg">
         <div className="w-full flex max-sm:flex-col-reverse gap-2">
           <aside className="flex md:flex-col max-sm:flex-row-reverse gap-2 mx-3 pt-3 justify-start items-center">
@@ -117,9 +127,9 @@ export default async function Page({ params }: { params: { id: string } }) {
               <div className="flex gap-3 items-center">
                 <Avatar className="w-6 h-6 border-white border-2">
                   <AvatarImage
-                    src={`https://gravatar.com/avatar/${
-                      sha256(data!.email!)
-                    }?d=${encodeURIComponent(DEFAULT_AVATAR)}&s=100`}
+                    src={`https://gravatar.com/avatar/${sha256(
+                      data!.email!,
+                    )}?d=${encodeURIComponent(DEFAULT_AVATAR)}&s=100`}
                     alt="@shadcn"
                   />
                   <AvatarFallback>{data!.user_name!.charAt(0)}</AvatarFallback>
@@ -145,12 +155,18 @@ export default async function Page({ params }: { params: { id: string } }) {
                     {tag.display_name}
                   </Badge>
                 ))}
-                {(tags && tags.length > 3) &&
-                  <pre className="text-md">...</pre>}
+                {tags && tags.length > 3 && <pre className="text-md">...</pre>}
               </section>
               <h1 className="font-semibold text-xl">{data!.title}</h1>
               <main className="mt-1">
-                <Markdown className={"text-md"}>{data!.content}</Markdown>
+                <Markdown
+                  className={"text-md leading-relaxed"}
+                  components={MarkdownComponents}
+                  rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                  remarkPlugins={[[remarkGfm]]}
+                >
+                  {data.content}
+                </Markdown>
               </main>
             </div>
             <div>
@@ -200,20 +216,22 @@ export default async function Page({ params }: { params: { id: string } }) {
       </div>
       <div className="">
         <div className="flex flex-col gap-3">
-          {answers?.sort((a, b) => {
-            if (a.status === b.status) {
-              return a.stars - b.stars;
-            } else {
-              return +b.status - +a.status;
-            }
-          }).map((ans) => (
-            <AnswerDisplay
-              current_user_id={user?.id ?? ""}
-              key={ans.thread_ref}
-              ans={ans}
-              user_prev_vote={default_prev_vote_ans}
-            />
-          ))}
+          {answers
+            ?.sort((a, b) => {
+              if (a.status === b.status) {
+                return a.stars - b.stars;
+              } else {
+                return +b.status - +a.status;
+              }
+            })
+            .map((ans) => (
+              <AnswerDisplay
+                current_user_id={user?.id ?? ""}
+                key={ans.thread_ref}
+                ans={ans}
+                user_prev_vote={default_prev_vote_ans}
+              />
+            ))}
         </div>
       </div>
     </div>

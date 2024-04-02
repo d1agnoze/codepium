@@ -16,7 +16,7 @@ const Question = ({ question }: { question: question_seo }) => {
       <div className="flex max-sm:flex-col-reverse">
         <div className="h-auto grid place-items-center px-5">
           <span className="text-2xl font-bold">{question.stars}</span>
-          <span className="text-muted-foreground text-sm italic">Upvotes</span>
+          <span className="text-muted-foreground text-sm italic">Votes</span>
         </div>
         <div className="flex flex-col gap-1">
           <div className="flex">
@@ -42,19 +42,18 @@ const Question = ({ question }: { question: question_seo }) => {
             ))}
           </div>
           <div className="flex gap-3">
-            {question.status &&
-              (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <BadgeCheck size={20} fill="green" color="white" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>This question has a best answer verified</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+            {question.status && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <BadgeCheck size={20} fill="green" color="white" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>This question has a verified best answer</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
             <span className="text-muted-foreground">
               {question.answer_count} Answer(s)
             </span>

@@ -67,7 +67,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             </li>
             <li>
-              <Link href={"#"}>
+              <Link href={"/profile/account-settings"}>
                 <Settings /> Account Settings
               </Link>
             </li>

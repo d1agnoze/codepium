@@ -14,14 +14,15 @@ export async function GET(request: Request) {
     .select("*", { count: "exact", head: true });
   const { searchParams } = new URL(request.url);
 
-  const filter_str = searchParams.get("filter");
+  const filter_str = searchParams.get("tag");
+  console.log(filter_str);
   const search = searchParams.get("search");
-  const from_date = (new Date(searchParams.get("from") ?? "1900-1-1"))
-    .toISOString();
-  const to_date = (new Date(searchParams.get("to") ?? new Date()))
-    .toISOString();
-  console.log(searchParams.get("to"), searchParams.get("from"));
+  const from_date = new Date(
+    searchParams.get("from") ?? "1900-1-1",
+  ).toISOString();
+  const to_date = new Date(searchParams.get("to") ?? new Date()).toISOString();
   const filter = filter_str ? filter_str.split(",") : [];
+  console.log(filter);
 
   const params = paginationSchema.safeParse({
     page: parseInt(
@@ -38,29 +39,32 @@ export async function GET(request: Request) {
 
   /* INFO : query */
   if (filter && filter.length > 0) {
-    query = query.overlaps("filter", [...filter]);
-    count_query = count_query.overlaps("filter", [...filter]);
+    query = query.overlaps("tag", [...filter]);
+    count_query = count_query.overlaps("tag", [...filter]);
   }
   if (search) {
     query = query.ilike("title", `%${search}%`);
     count_query = count_query.ilike("title", `%${search}%`);
   }
   if (from_date != null || to_date != null) {
-    query = query
-      .lt("created_at", to_date)
-      .gt("created_at", from_date);
+    query = query.lt("created_at", to_date).gt("created_at", from_date);
     count_query = count_query
       .lt("created_at", to_date)
       .gt("created_at", from_date);
   }
 
   const { count, error: c_err } = await count_query;
-  if (c_err || count == null) return BadRequest();
+  if (c_err || count == null) {
+    console.log('BAD REQUEST',c_err?.message, count);
+    return BadRequest();
+  }
 
-  const { data, error } = await query.range(
-    (params.data.page - 1) * params.data.limit,
-    params.data.page * params.data.limit - 1,
-  ).returns<question_seo[]>();
+  const { data, error } = await query
+    .range(
+      (params.data.page - 1) * params.data.limit,
+      params.data.page * params.data.limit - 1,
+    )
+    .returns<question_seo[]>();
 
   if (data == null || error) return ServerError();
 

@@ -17,7 +17,7 @@ const LoadingProvider = () => {
             id="loading_overlay"
             className="w-full h-full absolute top-0 left-0 z-50 flex justify-center items-center"
           >
-            <div className="w-full h-full bg-slate-700 opacity-60 absolute">
+            <div className="w-full h-full hero-overlay absolute">
             </div>
             <span className=" mt-10 loading text-white loading-spinner loading-lg">
             </span>

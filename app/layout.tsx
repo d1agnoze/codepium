@@ -11,6 +11,8 @@ import { Flip, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingProvider from "@/components/Loading";
 import Link from "next/link";
+import { Suspense } from "react";
+import { NavigationEvents } from "@/components/NavigationEvents";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -22,9 +24,11 @@ export const metadata = {
   description: "print('welcome to codepium!')",
 };
 
-export default function RootLayout(
-  { children }: { children: React.ReactNode },
-) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const cookieStore = cookies();
   const canInitSupabaseClient = () => {
     try {
@@ -64,6 +68,10 @@ export default function RootLayout(
             </div>
             {children}
           </main>
+          <Suspense fallback={null}>
+            <NavigationEvents />
+          </Suspense>
+
           <ToastContainer
             position="bottom-left"
             autoClose={3000}

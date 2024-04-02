@@ -1,4 +1,4 @@
 export const PAGINATION_SETTINGS = {
-  limit: 2,
+  limit: 5,
   page: 1,
 };

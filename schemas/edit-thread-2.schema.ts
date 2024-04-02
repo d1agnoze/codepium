@@ -11,7 +11,7 @@ export const editThreadSchema = z.object({
   content: z.string({
     required_error: "Thread description is required",
     invalid_type_error: "Thread description must be a string of characters",
-  }).min(10, "Minimum length of this field is 10 characters").max(400),
+  }).min(10, "Minimum length of this field is 10 characters").max(2000),
   expertises: z.object({
     id: z.string().min(1),
     display_name: z.string().min(1),
@@ -19,3 +19,4 @@ export const editThreadSchema = z.object({
   mode: z.enum(["post", "question"]),
   id: z.string().min(16),
 });
+

@@ -1,12 +1,12 @@
-import type { Config } from "tailwindcss"
+import type { Config } from "tailwindcss";
 
 const config = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
   ],
   prefix: "",
   theme: {
@@ -77,9 +77,23 @@ const config = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
     },
-  }, 
+  },
   daisyui: {
-    themes: false, // false: only light + dark | true: all themes | array: specific themes like this ["light", "dark", "cupcake"]
+    themes: [
+      {
+        mytheme: {
+          primary: "#f3f4f6",
+          secondary: "#6b7280",
+          accent: "#22c55e",
+          neutral: "#0f1608",
+          "base-100": "#272b36",
+          info: "#0ea5e9",
+          success: "#bef264",
+          warning: "#eab308",
+          error: "#f43f5e",
+        },
+      },
+    ], // false: only light + dark | true: all themes | array: specific themes like this ["light", "dark", "cupcake"]
     base: true, // applies background color and foreground color for root element by default
     utils: true, // adds responsive and modifier utility classes
     prefix: "", // prefix for daisyUI classnames (components, modifiers and responsive class names. Not colors)
@@ -88,6 +102,6 @@ const config = {
   },
 
   plugins: [require("tailwindcss-animate"), require("daisyui")],
-} satisfies Config
+} satisfies Config;
 
-export default config
+export default config;

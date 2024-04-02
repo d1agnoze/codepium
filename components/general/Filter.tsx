@@ -21,23 +21,32 @@ import { DatePickerWithRange } from "./DateRangePicker";
 import { DateRange } from "react-day-picker";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { useRouter, useSearchParams } from "next/navigation";
 
-const Filter = ({ values }: Prop) => {
+const Filter = ({ values, pre_sel_exp }: Prop) => {
   const [openExpertise, setOpenExpertise] = useState<boolean>(false);
   const [input, setInput] = useState<string>("");
+  const router = useRouter();
   const [filter, setFilter] = useState<settings>({
-    tag: [],
+    tag: pre_sel_exp ? [pre_sel_exp] : [],
     search: "",
     date: undefined,
   });
+  const [sel_exp, set_sel_exp] = useState<Expertise[]>(filter.tag);
 
   useEffect(() => {
     values(filter);
   }, [filter]);
 
+  useEffect(() => {
+    console.log("clooooooooooooooose");
+    if (!openExpertise) setFilter({ ...filter, tag: sel_exp });
+  }, [openExpertise]);
+
   const expertiseHandler = (arg: Expertise[]) => {
-    setFilter({ ...filter, tag: arg });
+    set_sel_exp(arg);
   };
+
   const datePickerHandler = (arg: DateRange) => {
     setFilter({ ...filter, date: arg });
   };
@@ -47,6 +56,8 @@ const Filter = ({ values }: Prop) => {
   const resetForm = () => {
     setInput("");
     setFilter({ tag: [], search: "", date: undefined });
+    set_sel_exp([]);
+    router.replace("/question/");
   };
 
   return (
@@ -69,11 +80,13 @@ const Filter = ({ values }: Prop) => {
       <div className="flex w-full max-w-sm items-center space-x-2">
         <Input
           type="text"
-          placeholder="🔎 Search by question title"
+          placeholder="🔎 Search by title"
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
-        <Button type="submit" onClick={() => searchHandler()}>Search</Button>
+        <Button type="submit" onClick={() => searchHandler()}>
+          Search
+        </Button>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger className="ml-auto">
@@ -117,6 +130,7 @@ export default Filter;
 
 interface Prop {
   values: (filter: settings) => void;
+  pre_sel_exp?: Expertise;
 }
 export interface settings {
   tag: Expertise[];

@@ -1,64 +1,63 @@
 "use server";
 
+import ProfileShowCase from "@/components/server/profile/ProfileShowcase";
+import Statistic from "@/components/server/profile/Statistic";
 import StopLoading from "@/components/stoploading";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardDescription, CardTitle } from "@/components/ui/card";
-import { DEFAULT_AVATAR } from "@/defaults/profile";
+import { Textarea } from "@/components/ui/textarea";
 import { get_user_seo } from "@/types/get_user_seo.dto";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { sha256 } from "js-sha256";
-import { PanelRightOpen } from "lucide-react";
+import { PencilLine } from "lucide-react";
 import { cookies } from "next/headers";
-import Image from "next/image";
-import { notFound } from "next/navigation";
 
 export default async function Page() {
   const supabase = createServerComponentClient({ cookies: () => cookies() });
   const { data, error } = await supabase.from("get_user_seo").select("*");
-  const { data: email_col, error: email_err } = await supabase.from(
-    "get_user_email",
-  ).select("*");
+  const { data: email_col, error: email_err } = await supabase
+    .from("get_user_email")
+    .select("*");
+
   if (
-    error || email_err || !email_col || !data || data.length === 0 ||
+    error ||
+    email_err ||
+    !email_col ||
+    !data ||
+    data.length === 0 ||
     email_col.length === 0
-  ) return notFound();
-  const user = (data as get_user_seo[]).at(0);
+  )
+    throw new Error("Error fetching user data");
+
+  const user = (data as get_user_seo[])[0];
   if (user) user.email = email_col.at(0).email.trim().toLowerCase();
+
+  const { data: stats, error: stats_error } = await supabase
+    .from("get_statistic")
+    .select("*")
+    .eq("id", user.id)
+    .single<Statistic>();
+  if (!stats || stats_error) throw new Error("Error fetching statistics");
+
+  const profile_prop = {
+    background_image: user.background_image,
+    display_name: user.display_name,
+    user_name: user.user_name,
+    email: user.email,
+  };
+
   return (
     <div className="flex flex-col justify-center box-border px-2">
-      <div className="w-full md:h-[24vh] max-sm:h-[20dvh] max-sm:mb-6 md:mb-8 overflow-hidden relative">
-        <Image
-          src={user!.background_image}
-          fill={true}
-          className="z-0 rounded-lg"
-          priority={true}
-          alt="user's background image"
-        />
-        <div className="absolute bottom-3 left-5 z-10 flex gap-3 items-center">
-          <Avatar className="w-28 h-28 border-white border-2">
-            <AvatarImage
-              src={`https://gravatar.com/avatar/${sha256(user!.email)}?d=${
-                encodeURIComponent(DEFAULT_AVATAR)
-              }&s=100`}
-              alt="@shadcn"
-            />
-            <AvatarFallback>{user?.user_name.charAt(0)}</AvatarFallback>
-          </Avatar>
-          <Card className="py-2 pl-5 pr-8 border-0 bg-hslvar transition cursor-default">
-            <CardTitle>{user?.display_name}</CardTitle>
-            <CardDescription>@{user?.user_name}</CardDescription>
-          </Card>
-          <StopLoading />
-        </div>
-      </div>
+      <ProfileShowCase {...profile_prop} />
+      {/*INFO: stop loading to hide loading icon */}
+      <StopLoading />
       <div className="container">
-        {user?.user_name}
-        <label
-          htmlFor="drawer"
-          className="btn bg-transparent hover:bg-hslvar drawer-button lg:hidden"
-        >
-          <PanelRightOpen />
-        </label>
+        <div className="w-full flex flex-col gap-2 bg-hslvar rounded-md px-5 py-3 mb-3">
+          <div className="flex gap-1">
+            <PencilLine />
+            <p>About</p>
+          </div>
+          <Textarea disabled value={user.about} className="bg-hslvar" />
+        </div>
+
+        <Statistic statistic={stats} />
       </div>
     </div>
   );
