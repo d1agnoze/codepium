@@ -3,6 +3,7 @@ export type post_seo = {
   title: string;
   id: string;
   tags: { id: string; name: string }[];
+  tag: string[];
   created_at: string;
 
   user_id: string;

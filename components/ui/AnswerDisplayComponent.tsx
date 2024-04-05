@@ -4,9 +4,6 @@ import { Answer } from "@/types/answer.type";
 import { BadgeCheck } from "lucide-react";
 import moment from "moment";
 import Markdown from "react-markdown";
-import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
-import { DEFAULT_AVATAR } from "@/defaults/profile";
-import { sha256 } from "js-sha256";
 import { VoteMode } from "@/enums/vote-mode.enum";
 import VotingComponent from "../VotingComponent";
 import { useRef } from "react";
@@ -98,7 +95,7 @@ export default function AnswerDisplay({
           <Profile
             email={ans.user_email}
             id={ans.user_id}
-            size="5"
+            size="7"
             username={ans.user_name}
           />
           <p className="text-xs text-gray-400">

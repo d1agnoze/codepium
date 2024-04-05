@@ -55,7 +55,7 @@ export async function GET(request: Request) {
 
   const { count, error: c_err } = await count_query;
   if (c_err || count == null) {
-    console.log('BAD REQUEST',c_err?.message, count);
+    console.log("BAD REQUEST", c_err?.message, count);
     return BadRequest();
   }
 
@@ -64,6 +64,7 @@ export async function GET(request: Request) {
       (params.data.page - 1) * params.data.limit,
       params.data.page * params.data.limit - 1,
     )
+    .order("created_at", { ascending: false })
     .returns<question_seo[]>();
 
   if (data == null || error) return ServerError();

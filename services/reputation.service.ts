@@ -1,14 +1,19 @@
 import { POINT_SYS } from "@/defaults/points.system";
 import { AuthError } from "@/helpers/error/AuthError";
 import { ReputationError } from "@/helpers/error/ReputationError";
+import { reputation } from "@/types/reputation.type";
 import { SupabaseClient, User } from "@supabase/auth-helpers-nextjs";
 
 export class ReputationService {
   private client: SupabaseClient<any, "public", any>;
   private user: User | null = null;
 
-  constructor(supabaseClient: SupabaseClient<any, "public", any>) {
+  constructor(
+    supabaseClient: SupabaseClient<any, "public", any>,
+    user?: User | null,
+  ) {
     this.client = supabaseClient;
+    if (user) this.user = user;
   }
 
   private async getUser(): Promise<User | null> {
@@ -27,30 +32,44 @@ export class ReputationService {
     try {
       if (!this.user) throw new AuthError("REP_SERVICE: Unable to fetch user");
 
-      const point = this.POINT_SYSTEM(action);
-      const { error } = await this.client
-        .from("Reputation")
-        .upsert([{ user_id: this.user.id, point: point }]);
+      const curr_point = await this.getReputation();
+      /* IMPORTANT: check if user reputation record is there */
+      console.log(JSON.stringify(curr_point));
+      if (curr_point == null || curr_point.id == null) {
+        const { error } = await this.client
+          .from("Reputation")
+          .insert({ user_id: this.user.id, point: this.POINT_SYSTEM(action) });
+        if (error)
+          throw new ReputationError(error.message, action, this.user.id);
+      } else {
+        const point = this.POINT_SYSTEM(action) + curr_point.point;
+        const { error } = await this.client
+          .from("Reputation")
+          .update({ point })
+          .eq("id", curr_point.id);
 
-      if (error) throw new ReputationError(error.message, action, this.user.id);
+        if (error)
+          throw new ReputationError(error.message, action, this.user.id);
+      }
     } catch (error: any) {
+      console.log(error.message);
       throw error;
     }
   }
 
-  async getReputation(): Promise<number> {
+  async getReputation(): Promise<reputation | null> {
     try {
       if (!this.user) throw new AuthError("REP_SERVICE: Unable to fetch user");
 
-      // TODO: get user reputation
       const { data, error } = await this.client
         .from("Reputation")
-        .select("point")
+        .select()
         .eq("user_id", this.user.id)
-        .returns<number[]>();
+        .returns<reputation[]>();
       if (error) throw new Error(error.message);
-      if (!data) throw new Error("REP_SERVICE: Unable to fetch reputation");
-      if (data.length === 0) return 0;
+      if (data == null)
+        throw new Error("REP_SERVICE: Unable to fetch reputation");
+      if (data.length === 0) return null;
 
       return data[0];
     } catch (error: any) {

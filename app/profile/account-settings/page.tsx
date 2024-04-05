@@ -21,11 +21,19 @@ export default async function Page() {
   if (error) throw new Error("Error fetching profile: " + error.message);
   if (!profile) throw new Error("Profile not found!");
 
+  const { data: exp, error: exp_err } = await sb
+    .from("Expertise")
+    .select(`id, display_name, created_at, ExpertiseTracker!inner(user_id)`)
+    .eq("ExpertiseTracker.user_id", user.id)
+    .returns<Expertise[]>();
+
+  if (exp_err) throw new Error("Error fetching profile: " + exp_err.message);
+
   return (
     <div className="flex flex-col gap-2 p-5">
       <h1 className="font-bold text-2xl">Account Settings</h1>
       <Separator />
-      <AccountSettings user={profile} />
+      <AccountSettings user={profile} expertises={exp} />
     </div>
   );
 }

@@ -15,7 +15,7 @@ export const MarkdownComponents: object = {
     return (
       <pre
         {...rest}
-        className={`${className} my-5 bg-hslvar py-3 px-2 rounded-md overflow-scroll`}
+        className={`${className} leading-5 py-2 px-1 rounded-md overflow-scroll`}
       >
         {children}
       </pre>
@@ -23,8 +23,9 @@ export const MarkdownComponents: object = {
   },
   code(props: any) {
     const { children, className, node, ...rest } = props;
+
     return (
-      <code {...rest} className={`${className} my-2 bg-hslvar rounded-md p-1`}>
+      <code {...rest} className={`${className} my-2 rounded-md p-1 md:text-sm`}>
         {children}
       </code>
     );
@@ -72,6 +73,8 @@ export const MarkdownComponents: object = {
         </div>
       );
     }
-    return <p className="my-2">{paragraph.children}</p>;
+    return (
+      <p className="my-2 break-words whitespace-normal">{paragraph.children}</p>
+    );
   },
 };

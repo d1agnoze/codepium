@@ -74,6 +74,12 @@ async function Layout({ children }: { children: React.ReactNode }) {
                 </li>
               ))}
             </ul>
+            <div className="divider"></div>
+            <li>
+              <Link href={"/question/recommend"}>
+                Browse recommended question...
+              </Link>
+            </li>
             <li>
               <Link href={"/question"}>Browse all question...</Link>
             </li>

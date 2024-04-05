@@ -2,7 +2,6 @@ import useFetchCurrent from "@/hooks/fetch";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import MultiSelect from "../external/MultiSelect";
-import { Skeleton } from "../ui/skeleton";
 
 export default function ExpertisePicker({
   value,
@@ -14,11 +13,12 @@ export default function ExpertisePicker({
   const { data, error, loading } = useFetchCurrent("general/expertises");
   const [exps, setExps] = useState<Expertise[]>([]);
   const [selected, setSelected] = useState<Expertise[]>(defaultValues ?? []);
-  const hasCache = useRef<boolean>(
-    sessionStorage.getItem("expertises") != null,
-  );
+  const hasCache = useRef<boolean>(false);
   const router = useRouter();
 
+  useEffect(() => {
+    hasCache.current = sessionStorage.getItem("expertises") != null;
+  }, []);
   useEffect(() => {
     if (hasCache.current) {
       setExps(JSON.parse(sessionStorage.getItem("expertises")!));

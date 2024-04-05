@@ -1,5 +1,5 @@
 "use client";
-import { formSchema as schema } from "@/schemas/create-use.schema";
+import { accountSettingsSchema as schema } from "@/schemas/account-settins.schema";
 import { INITIAL_MESSAGE_OBJECT } from "@/types/message.route";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFormState } from "react-dom";
@@ -22,8 +22,16 @@ import { useRouter } from "next/navigation";
 import { Textarea } from "../ui/textarea";
 import { Button } from "@/components/ui/button";
 import nProgress from "nprogress";
+import ExpertisePicker from "../general/ExpertisePicker";
+import { toast } from "react-toastify";
 
-const AccountSettings = ({ user }: { user: User }) => {
+const AccountSettings = ({
+  user,
+  expertises,
+}: {
+  user: User;
+  expertises: Expertise[];
+}) => {
   const [state, formAction] = useFormState(UpdateUser, INITIAL_MESSAGE_OBJECT);
   const router = useRouter();
   const form = useForm<z.infer<typeof schema>>({
@@ -32,12 +40,18 @@ const AccountSettings = ({ user }: { user: User }) => {
       username: user.user_name,
       displayName: user.display_name,
       about: user.about,
+      expertises: expertises,
     },
   });
   const onSubmit = async (data: z.infer<typeof schema>) => {
     nProgress.start();
-    console.log(data);
+
     const payload = new FormData();
+    payload.append("username", data.username);
+    payload.append("displayName", data.displayName);
+    payload.append("about", data.about);
+    payload.append("expertises", JSON.stringify(data.expertises));
+
     formAction(payload);
   };
 
@@ -47,9 +61,11 @@ const AccountSettings = ({ user }: { user: User }) => {
       form.reset();
     }
     if (!state.ok && state.message !== "") {
+      toast.error(state.message);
     }
     nProgress.done();
   }, [state.message]);
+
   return (
     <div>
       <Form {...form}>
@@ -92,6 +108,29 @@ const AccountSettings = ({ user }: { user: User }) => {
                   <Textarea placeholder="You can leave this blank" {...field} />
                 </FormControl>
                 <FormDescription />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="expertises"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Changes Expertises</FormLabel>
+                <FormControl>
+                  <ExpertisePicker
+                    value={(arg) => {
+                      field.value = arg;
+                      field.onChange(arg);
+                    }}
+                    defaultValues={expertises}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Hey, we've all been there, something new things feel good!!!
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

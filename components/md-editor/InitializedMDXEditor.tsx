@@ -27,6 +27,7 @@ import {
 } from "@mdxeditor/editor";
 import { useTheme } from "next-themes";
 import { UploadResponse } from "@/types/upload.route";
+import SUPPORTED_LANG from "@/defaults/supported-langs.parser";
 
 // Only import this to the next file
 export default function InitializedMDXEditor({
@@ -64,16 +65,19 @@ export default function InitializedMDXEditor({
               <CreateLink />
               <InsertImage />
               <ConditionalContents
-                options={[{
-                  when: (editor) => editor?.editorType === "codeblock",
-                  contents: () => <ChangeCodeMirrorLanguage />,
-                }, {
-                  fallback: () => (
-                    <>
-                      <InsertCodeBlock />
-                    </>
-                  ),
-                }]}
+                options={[
+                  {
+                    when: (editor) => editor?.editorType === "codeblock",
+                    contents: () => <ChangeCodeMirrorLanguage />,
+                  },
+                  {
+                    fallback: () => (
+                      <>
+                        <InsertCodeBlock />
+                      </>
+                    ),
+                  },
+                ]}
               />
               <DiffSourceToggleWrapper>
                 <UndoRedo />
@@ -89,9 +93,7 @@ export default function InitializedMDXEditor({
         imagePlugin({ imageUploadHandler }),
         thematicBreakPlugin(),
         codeBlockPlugin({ defaultCodeBlockLanguage: "js" }),
-        codeMirrorPlugin({
-          codeBlockLanguages: { js: "JavaScript", css: "CSS" },
-        }),
+        codeMirrorPlugin({ codeBlockLanguages: SUPPORTED_LANG }),
         markdownShortcutPlugin(),
         diffSourcePlugin({
           diffMarkdown: "An older version",

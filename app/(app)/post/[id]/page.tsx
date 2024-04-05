@@ -3,7 +3,7 @@
 import CommentComponent from "@/components/CommentComponent";
 import VotingComponent from "@/components/VotingComponent";
 import UserAction from "@/components/edit/UserActionComponent";
-import { MarkdownComponents } from "@/components/react-markdown/Component";
+import MDRenderer from "@/components/react-markdown/Markdown";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -17,10 +17,6 @@ import { Info, MessageCircleMore } from "lucide-react";
 import moment from "moment";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import Markdown from "react-markdown";
-import rehypeHighlight from "rehype-highlight";
-import rehypeRaw from "rehype-raw";
-import remarkGfm from "remark-gfm";
 
 export default async function Page({ params }: { params: { id: string } }) {
   const supabase = createServerComponentClient({ cookies: () => cookies() });
@@ -92,7 +88,7 @@ export default async function Page({ params }: { params: { id: string } }) {
                 mode="post"
                 visible={user?.id == post.user_id}
                 id={post.id}
-                editSite={"/profile/edit/question/" + post.id}
+                editSite={"/profile/edit/post/" + post.id}
               />
             </div>
             <section className="w-full flex gap-1 pl-10">
@@ -107,14 +103,7 @@ export default async function Page({ params }: { params: { id: string } }) {
               {post.title}
             </h1>
             <main className="mt-1">
-              <Markdown
-                className={"text-lg leading-relaxed"}
-                components={MarkdownComponents}
-                rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                remarkPlugins={[[remarkGfm]]}
-              >
-                {post.content}
-              </Markdown>
+              <MDRenderer content={post.content} />
             </main>
           </div>
         </article>

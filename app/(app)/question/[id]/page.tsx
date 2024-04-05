@@ -4,7 +4,7 @@ import AnswerComponent from "@/components/AnswerComponent";
 import CommentComponent from "@/components/CommentComponent";
 import VotingComponent from "@/components/VotingComponent";
 import UserAction from "@/components/edit/UserActionComponent";
-import { MarkdownComponents } from "@/components/react-markdown/Component";
+import MDRenderer from "@/components/react-markdown/Markdown";
 import AnswerDisplay from "@/components/ui/AnswerDisplayComponent";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +18,6 @@ import { VoteMode } from "@/enums/vote-mode.enum";
 import { VoteEnum } from "@/enums/vote.enum";
 import { Answer } from "@/types/answer.type";
 import { Question } from "@/types/question.type";
-import { hideLoading } from "@/utils/loading.service";
 import { calculateVotes } from "@/utils/vote.utils";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { sha256 } from "js-sha256";
@@ -26,10 +25,6 @@ import { ChevronsUpDown } from "lucide-react";
 import moment from "moment";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import Markdown from "react-markdown";
-import rehypeHighlight from "rehype-highlight";
-import rehypeRaw from "rehype-raw";
-import remarkGfm from "remark-gfm";
 
 export default async function Page({ params }: { params: { id: string } }) {
   const supabase = createServerComponentClient({ cookies: () => cookies() });
@@ -122,7 +117,7 @@ export default async function Page({ params }: { params: { id: string } }) {
               current_direction={default_prev_vote_ques}
             />
           </aside>
-          <article className="flex-grow">
+          <article className="flex-grow min-w-0">
             <div className="flex flex-col gap-3">
               <div className="flex gap-3 items-center">
                 <Avatar className="w-6 h-6 border-white border-2">
@@ -159,14 +154,10 @@ export default async function Page({ params }: { params: { id: string } }) {
               </section>
               <h1 className="font-semibold text-xl">{data!.title}</h1>
               <main className="mt-1">
-                <Markdown
+                <MDRenderer
                   className={"text-md leading-relaxed"}
-                  components={MarkdownComponents}
-                  rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                  remarkPlugins={[[remarkGfm]]}
-                >
-                  {data.content}
-                </Markdown>
+                  content={data!.content}
+                />
               </main>
             </div>
             <div>

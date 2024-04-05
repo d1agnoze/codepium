@@ -1,5 +1,6 @@
 "use server";
 
+import StopLoading from "@/components/stoploading";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_HERO_IMAGE } from "@/defaults/profile";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
@@ -8,10 +9,13 @@ import Link from "next/link";
 
 export default async function Index() {
   const supabase = createServerComponentClient({ cookies: () => cookies() });
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   return (
     <div className="flex-1 w-full min-h-screen flex flex-col gap-20 items-center">
+      <StopLoading />
       <div
         className="hero max-md:min-h-screen bg-base-200"
         style={{ backgroundImage: `url(${DEFAULT_HERO_IMAGE})` }}
@@ -26,9 +30,7 @@ export default async function Index() {
             </p>
             <div className="flex gap-3 justify-center">
               {!user && (
-                <Button className="bg-accent">
-                  Join Codepium community
-                </Button>
+                <Button className="bg-accent">Join Codepium community</Button>
               )}
             </div>
           </div>
@@ -41,7 +43,9 @@ export default async function Index() {
           </Link>
         </div>
         <div>
-          <Link className="btn btn-info" href={"/post"}>Browse Articles</Link>
+          <Link className="btn btn-info" href={"/post"}>
+            Browse Articles
+          </Link>
         </div>
       </div>
     </div>

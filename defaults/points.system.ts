@@ -1,7 +1,10 @@
 export const POINT_SYS = {
-  vote: 1,
-  comment: 2,
   question: 5,
-  post: 5,
-  answer: 7,
+  answer: 3,
+  verified_answer: 10,
+};
+export const POINT_SYS_GUARD = {
+  upload: 15,
+  post: 12,
+  comment: 10,
 };

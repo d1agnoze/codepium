@@ -3,23 +3,23 @@
 import ThreadEditForm, {
   Prop,
 } from "@/components/edit/Question_Post_Edit_Component";
-import { Question } from "@/types/question.type";
+import { Post } from "@/types/post.type";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 export default async function Page({ params }: { params: { id: string } }) {
-  const supabase = createServerComponentClient({ cookies: () => cookies() });
-  /* INFO: fetch data from supabase, throw any Error encounterd */
   try {
+    /* INFO: fetch data from supabase, throw any Error encounterd */
+    const supabase = createServerComponentClient({ cookies: () => cookies() });
     /** @description fetch data */
     const { data, error } = await supabase
-      .from("get_question_full")
+      .from("get_post_full")
       .select()
       .eq("id", params.id)
-      .returns<Question>()
+      .returns<Post>()
       .limit(1)
-      .maybeSingle<Question>();
+      .maybeSingle<Post>();
 
     /** @description fetch user data */
     const {
@@ -30,8 +30,7 @@ export default async function Page({ params }: { params: { id: string } }) {
      * @description Get user authorization
      */
     const fromUser = data?.user_id && user?.id && user?.id === data?.user_id;
-    console.log(error, data == null, !fromUser);
-    if (error || data == null || !fromUser) notFound();
+    if (error || data == null || !fromUser || data.isDeleted) notFound();
 
     /**
      * @description Get Expertise tags
@@ -42,7 +41,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     if (tag_err || !tags) throw new Error("Error fetching expertise tags");
 
     const prop: Prop = {
-      mode: "question",
+      mode: "post",
       id: params.id,
       data: {
         title: data?.title ?? "",

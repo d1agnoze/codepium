@@ -79,6 +79,14 @@ async function Layout({ children }: { children: React.ReactNode }) {
               ))}
             </ul>
             <li>
+              <Link
+                href={"/post/recommend"}
+                className="text-secondary-foreground"
+              >
+                Browse recommended articles
+              </Link>
+            </li>
+            <li>
               <Link href={"/post"} className="text-secondary-foreground">
                 Browse all articles...
               </Link>
