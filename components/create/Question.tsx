@@ -28,6 +28,7 @@ import { INITIAL_MESSAGE_OBJECT } from "@/types/message.route";
 import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { ReputationNotifierService as RNS } from "@/services/reputation-notifier.services";
 
 export default function QuestionForm() {
   const ref = useRef<MDXEditorMethods>(null);
@@ -60,9 +61,10 @@ export default function QuestionForm() {
             fetch("/api/general/upload", {
               method: "DELETE",
               body: formData,
-            }).then((res) => {
-              if (!res.ok) throw new Error(res.statusText);
             })
+              .then((res) => {
+                if (!res.ok) throw new Error(res.statusText);
+              })
               .catch((err) => console.log(err));
           }
         }
@@ -77,10 +79,9 @@ export default function QuestionForm() {
       router.replace("/");
     }
     if (state.message.trim() != "" && state.ok) {
-      console.log(state.message);
       router.replace("/question/" + state.message);
+      RNS.adder_notify("question");
       hideLoading();
-      toast.success("Question submitted");
     }
   }, [state]);
 

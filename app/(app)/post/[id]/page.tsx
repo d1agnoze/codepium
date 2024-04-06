@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { DEFAULT_AVATAR } from "@/defaults/profile";
 import { VoteMode } from "@/enums/vote-mode.enum";
 import { VoteEnum } from "@/enums/vote.enum";
+import { ReputationService } from "@/services/reputation.service";
 import { Post } from "@/types/post.type";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { sha256 } from "js-sha256";
@@ -54,6 +55,14 @@ export default async function Page({ params }: { params: { id: string } }) {
   if (err_likes) notFound();
   const default_vote =
     cmt_likes == null ? VoteEnum.neutral : cmt_likes.user_status;
+
+
+  let point = 0;
+  if (user) {
+    const repSrv = new ReputationService(supabase, user);
+    const reputation = await repSrv.getReputation();
+    point = reputation?.point ?? 0;
+  }
 
   return (
     <div className="w-full border-box px-10">
@@ -124,6 +133,7 @@ export default async function Page({ params }: { params: { id: string } }) {
             <MessageCircleMore /> <span>Comments</span>
           </h1>
           <CommentComponent
+            rep={point}
             mode="post"
             source_ref={post.id}
             user_id={user?.id}

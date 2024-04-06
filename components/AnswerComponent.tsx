@@ -25,11 +25,13 @@ import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
 import { hideLoading, showLoading } from "@/utils/loading.service";
 import { useRouter } from "next/navigation";
+import { ReputationNotifierService as RNS } from "@/services/reputation-notifier.services";
 
 interface Props {
   thread_id: string;
   user: { id: string; email: string } | null;
   owner_id: string;
+  rep: number;
 }
 export default function AnswerComponent(props: Props) {
   const [state, formAction] = useFormState(
@@ -51,9 +53,9 @@ export default function AnswerComponent(props: Props) {
   const router = useRouter();
 
   const [fromUser] = useState(
-    (props.user != null) &&
-      (props.owner_id != null) &&
-      (props.owner_id === props.user.id),
+    props.user != null &&
+      props.owner_id != null &&
+      props.owner_id === props.user.id,
   );
 
   const onSubmitHandler = (values: z.infer<typeof answerSchema>) => {
@@ -71,7 +73,7 @@ export default function AnswerComponent(props: Props) {
   useEffect(() => {
     if (state.message !== "") {
       if (state.ok) {
-        toast.success(state.message);
+        RNS.adder_notify("answer");
         router.refresh();
       } else {
         toast.error(state.message);
@@ -108,41 +110,40 @@ export default function AnswerComponent(props: Props) {
               </FormItem>
             )}
           />
-          {fromUser &&
-            (
-              <FormField
-                control={form.control}
-                name={"userValidated"}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel />
-                    <FormControl>
-                      <div className="items-top flex space-x-2">
-                        <Checkbox
-                          id="checkbox"
-                          onBlur={field.onBlur}
-                          onCheckedChange={field.onChange}
-                        />
-                        <div className="grid gap-1.5 leading-none">
-                          <label
-                            htmlFor="checkbox"
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            Mark as correct answer
-                          </label>
-                          <p className="text-sm text-muted-foreground">
-                            This action will automaticly close this thread,
-                            further comments and answer will not be allowed
-                          </p>
-                        </div>
+          {fromUser && (
+            <FormField
+              control={form.control}
+              name={"userValidated"}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel />
+                  <FormControl>
+                    <div className="items-top flex space-x-2">
+                      <Checkbox
+                        id="checkbox"
+                        onBlur={field.onBlur}
+                        onCheckedChange={field.onChange}
+                      />
+                      <div className="grid gap-1.5 leading-none">
+                        <label
+                          htmlFor="checkbox"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Mark as correct answer
+                        </label>
+                        <p className="text-sm text-muted-foreground">
+                          This action will automaticly close this thread,
+                          further comments and answer will not be allowed
+                        </p>
                       </div>
-                    </FormControl>
-                    <FormDescription />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+                    </div>
+                  </FormControl>
+                  <FormDescription />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           <SubmitButton text="Submit Answer" />
         </form>
       </Form>

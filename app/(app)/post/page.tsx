@@ -26,7 +26,7 @@ export default async function Page({
     console.log("dsudsdu", data);
   }
   return (
-    <div className="w-full flex flex-col px-8 mt-5 gap-3">
+    <div className="w-full flex flex-col px-8 mt-5 gap-3 mb-10">
       <div className="w-full mb-5">
         <h1 className="text-2xl font-bold">Articles</h1>
         <p className="">

@@ -23,10 +23,10 @@ export default async function Page({
       notFound();
     }
     filter = data;
-    console.log('dsudsdu',data);
+    console.log("dsudsdu", data);
   }
   return (
-    <div className="w-full flex flex-col px-8 mt-5 gap-3">
+    <div className="w-full flex flex-col px-8 mt-3 mb-10 gap-3">
       <div className="w-full mb-5">
         <h1 className="text-2xl font-bold">Question</h1>
         <p>Explore lastest questions and help other programmers</p>

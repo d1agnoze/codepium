@@ -2,6 +2,7 @@
 
 import { commentSchema } from "@/schemas/comment.schema";
 import { voteSchema } from "@/schemas/vote.schema";
+import { ReputationService } from "@/services/reputation.service";
 import { comment } from "@/types/comment.type";
 import { MessageObject } from "@/types/message.route";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
@@ -12,7 +13,9 @@ export async function CreateComment(
   formData: FormData,
 ): Promise<comment | MessageObject> {
   const supabase = createServerActionClient({ cookies: () => cookies() });
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const validated = commentSchema.safeParse({
     mode: formData.get("mode"),
     content: formData.get("content"),
@@ -22,8 +25,19 @@ export async function CreateComment(
     receviver: formData.get("receviver"),
   });
 
+  /*INFO: Check for user reputation*/
+  try {
+    const rep = new ReputationService(supabase, user);
+    const allow = await rep.guardAction("comment");
+    if (!allow) throw new Error();
+  } catch (err: any) {
+    return { message: "Error fetching reputation point", ok: false };
+  }
+
   // validation FAILED
-  if (!validated.success) { return { message: validated.error.message, ok: false }; }
+  if (!validated.success) {
+    return { message: validated.error.message, ok: false };
+  }
 
   //User id mismatch
   if (!user || validated.data.user_id !== user?.id) {
@@ -40,7 +54,8 @@ export async function CreateComment(
       reply: validated.data.receviver,
       thread_ref: validated.data.thread_id,
       user_id: validated.data.user_id,
-    }).returns<number>();
+    })
+    .returns<number>();
 
   //error handling
   if (error || data == null || data === -1) {
@@ -51,11 +66,12 @@ export async function CreateComment(
   }
 
   // success
-  const { data: res, error: res_err } = await supabase.from("get_comment_full")
-    .select().eq(
-      "id",
-      data,
-    ).returns<comment>().single();
+  const { data: res, error: res_err } = await supabase
+    .from("get_comment_full")
+    .select()
+    .eq("id", data)
+    .returns<comment>()
+    .single();
 
   //error handling
   if (res_err || res == null) {
@@ -70,7 +86,9 @@ export async function CreateComment(
 
 export async function createVote(formData: FormData): Promise<MessageObject> {
   const supabase = createServerActionClient({ cookies: () => cookies() });
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (user == null) {
     return { message: "Bad request: Invalid identity", ok: false, code: 401 };
@@ -98,17 +116,19 @@ export async function createVote(formData: FormData): Promise<MessageObject> {
     };
   }
 
-  const { data, error } = await supabase.rpc("create_vote", {
-    mode: validated.data.mode,
-    user_id: validated.data.user_id,
+  const { data, error } = await supabase
+    .rpc("create_vote", {
+      mode: validated.data.mode,
+      user_id: validated.data.user_id,
 
-    thread_id: validated.data.thread_id,
-    source_id: validated.data.source_id,
+      thread_id: validated.data.thread_id,
+      source_id: validated.data.source_id,
 
-    direct: validated.data.direction,
-    impact: validated.data.impact,
-    final_stat: validated.data.final_stat,
-  }).select();
+      direct: validated.data.direction,
+      impact: validated.data.impact,
+      final_stat: validated.data.final_stat,
+    })
+    .select();
 
   if (error || data == null) {
     console.log(error);

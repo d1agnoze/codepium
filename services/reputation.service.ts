@@ -1,4 +1,4 @@
-import { POINT_SYS } from "@/defaults/points.system";
+import { POINT_SYS, POINT_SYS_GUARD } from "@/defaults/points.system";
 import { AuthError } from "@/helpers/error/AuthError";
 import { ReputationError } from "@/helpers/error/ReputationError";
 import { reputation } from "@/types/reputation.type";
@@ -52,7 +52,6 @@ export class ReputationService {
           throw new ReputationError(error.message, action, this.user.id);
       }
     } catch (error: any) {
-      console.log(error.message);
       throw error;
     }
   }
@@ -103,5 +102,12 @@ export class ReputationService {
 
   private POINT_SYSTEM(action: keyof typeof POINT_SYS): number {
     return POINT_SYS[action];
+  }
+
+  async guardAction(action: keyof typeof POINT_SYS_GUARD): Promise<boolean> {
+    await this.getUser();
+    const res = await this.getReputation();
+    if (res != null && res.point >= POINT_SYS_GUARD[action]) return true;
+    return false;
   }
 }

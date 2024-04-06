@@ -1,6 +1,7 @@
 import { QUESTION_IMAGE_BUCKET } from "@/defaults/storages";
 import { ThreadMode, threadModeChecker } from "@/enums/thread-modes.enum";
 import { SupabaseHelper } from "@/helpers/supabase/supabaseHelper";
+import { ReputationService } from "@/services/reputation.service";
 import { UploadResponse } from "@/types/upload.route";
 import {
   BadRequest,
@@ -17,6 +18,12 @@ export async function POST(request: NextRequest) {
   const supabase = createRouteHandlerClient({ cookies: () => cookies() });
   const formData = await request.formData();
   const { data: { user } } = await supabase.auth.getUser();
+  const rep = new ReputationService(supabase, user)
+  const allow = await rep.guardAction("upload");
+
+  if(!allow){
+    return Unauthorized({ message: "Upload failed: Insufficient reputation" });
+  }
 
   //Check if user is authenticated
   if (!user) {

@@ -15,7 +15,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             aria-label="close sidebar"
             className="drawer-overlay"
           ></label>
-          <ul className="menu p-4 w-56 min-h-full bg-hslvar text-base-content">
+          <ul className="menu p-4 w-44 min-h-full bg-hslvar text-base-content">
             {/* Sidebar content here */}
             <li>
               <Link className="text-primary text-md flex gap-2" href={"/"}>

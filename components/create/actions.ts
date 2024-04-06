@@ -92,6 +92,11 @@ export async function createPost(
     } = await supabase.auth.getUser();
     if (!user) throw new AuthError("Unauthorized request");
 
+    /*INFO: Check for user reputation*/
+    const rep = new ReputationService(supabase, user);
+    const allow = await rep.guardAction("comment");
+    if (!allow) throw new ReputationError("Error fetching reputation point");
+
     const validate = postSchema.safeParse({
       title: formData.get("title"),
       content: formData.get("content"),

@@ -4,7 +4,7 @@ export const POINT_SYS = {
   verified_answer: 10,
 };
 export const POINT_SYS_GUARD = {
-  upload: 15,
+  upload: 35,
   post: 12,
-  comment: 10,
+  comment: 17,
 };

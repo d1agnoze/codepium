@@ -16,6 +16,7 @@ import {
 import { DEFAULT_AVATAR } from "@/defaults/profile";
 import { VoteMode } from "@/enums/vote-mode.enum";
 import { VoteEnum } from "@/enums/vote.enum";
+import { ReputationService } from "@/services/reputation.service";
 import { Answer } from "@/types/answer.type";
 import { Question } from "@/types/question.type";
 import { calculateVotes } from "@/utils/vote.utils";
@@ -73,6 +74,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   let default_prev_vote_ans: { thread_ref: string; direction: VoteEnum }[] = [];
   let default_prev_vote_ques: VoteEnum = VoteEnum.neutral;
+  let point = 0;
 
   if (user != null && answers && answers.length > 0) {
     const { data: vote_ans, error: vote_ans_err } = await supabase
@@ -101,6 +103,9 @@ export default async function Page({ params }: { params: { id: string } }) {
     if (vote_ques != null && vote_ques.length > 0) {
       default_prev_vote_ques = vote_ques[0].direction;
     }
+    const repSrv = new ReputationService(supabase, user);
+    const reputation = await repSrv.getReputation();
+    point = reputation?.point ?? 0;
   }
   return (
     <div className="w-full box-border px-3 lg:px-10 flex flex-col gap-1">
@@ -167,6 +172,7 @@ export default async function Page({ params }: { params: { id: string } }) {
                 source_ref={data!.id}
                 thread_id={data!.id}
                 source_user_id={data!.user_id!}
+                rep={point}
               />
             </div>
           </article>
@@ -183,6 +189,7 @@ export default async function Page({ params }: { params: { id: string } }) {
           <CollapsibleContent>
             <div className="mt-3">
               <AnswerComponent
+                rep={point}
                 thread_id={data!.id}
                 user={user ? { id: user.id, email: user.email! } : null}
                 owner_id={data!.user_id!}

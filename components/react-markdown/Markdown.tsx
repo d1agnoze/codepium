@@ -9,7 +9,7 @@ const MDRenderer = ({
   className,
 }: {
   content: string;
-  className: string;
+  className?: string;
 }) => {
   return (
     <Markdown

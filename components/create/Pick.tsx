@@ -32,8 +32,10 @@ import { useRouter } from "next/navigation";
 import { SubmitButton } from "../SubmitButton";
 import { hideLoading, showLoading } from "@/utils/loading.service";
 import { useEffect } from "react";
+import { ReputationNotifierService as RNS } from "@/services/reputation-notifier.services";
+import { POINT_SYS_GUARD } from "@/defaults/points.system";
 
-export default function Pick() {
+export default function Pick({ reputation }: { reputation: number }) {
   useEffect(() => {
     hideLoading();
   }, []);
@@ -46,7 +48,15 @@ export default function Pick() {
   });
   function onSubmit(values: z.infer<typeof pickModeSchema>) {
     showLoading();
+    const allow = guard();
+    if (!allow && values.mode === "post") {
+      RNS.guard_notify("post");
+      return;
+    }
     router.push(`/profile/create?mode=${values.mode}`);
+  }
+  function guard() {
+    return reputation >= POINT_SYS_GUARD["post"];
   }
   return (
     <Form {...form}>
@@ -72,6 +82,7 @@ export default function Pick() {
                         <Select
                           value={field.value}
                           onValueChange={(event) => {
+                            console.log(event);
                             field.onChange(event);
                           }}
                         >
@@ -80,7 +91,9 @@ export default function Pick() {
                           </SelectTrigger>
                           <SelectContent position="popper">
                             <SelectItem value="question">Question</SelectItem>
-                            <SelectItem value="post">Post</SelectItem>
+                            <SelectItem value="post" disabled={!guard()}>
+                              Post
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>

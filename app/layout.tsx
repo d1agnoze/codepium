@@ -13,6 +13,7 @@ import LoadingProvider from "@/components/Loading";
 import Link from "next/link";
 import { Suspense } from "react";
 import { NavigationEvents } from "@/components/NavigationEvents";
+import { Facebook, Github, Linkedin } from "lucide-react";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -68,6 +69,33 @@ export default function RootLayout({
             </div>
             {children}
           </main>
+          <footer className="footer footer-center p-10 bg-hslvar text-base-content rounded">
+            <nav className="grid grid-flow-col gap-4">
+              <a className="link link-hover">About us</a>
+              <a className="link link-hover">Contact</a>
+              <a className="link link-hover">Jobs</a>
+              <a className="link link-hover">Press kit</a>
+            </nav>
+            <nav>
+              <div className="grid grid-flow-col gap-4">
+                <a>
+                  <Facebook size={30} />
+                </a>
+                <a>
+                  <Linkedin size={30} />
+                </a>
+                <a>
+                  <Github size={30} />
+                </a>
+              </div>
+            </nav>
+            <aside>
+              <p>
+                Copyright © {new Date().getFullYear()} - All right reserved by
+                Vdac
+              </p>
+            </aside>
+          </footer>
           <Suspense fallback={null}>
             <NavigationEvents />
           </Suspense>

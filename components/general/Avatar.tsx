@@ -8,7 +8,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { CircleUserRound, Mail } from "lucide-react";
+import { Award, CircleUserRound, Mail } from "lucide-react";
 
 const Profile = ({
   display_name,
@@ -18,6 +18,7 @@ const Profile = ({
   border,
   username,
   id,
+  rep,
 }: Prop) => {
   const router = useRouter();
   const link = sha256(email.trim().toLowerCase());
@@ -74,6 +75,14 @@ const Profile = ({
               </span>
               <p>{email}</p>
             </div>
+            {rep && (
+              <div className="flex gap-2 text-info">
+                <span>
+                  <Award size={20} />
+                </span>
+                <p>{rep} Reputation points</p>
+              </div>
+            )}
           </div>
         </div>
       </HoverCardContent>
@@ -90,4 +99,5 @@ interface Prop {
   size?: string;
   border?: string;
   username?: string;
+  rep?: number;
 }

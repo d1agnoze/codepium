@@ -16,4 +16,6 @@ export type Answer = {
 
   isEdited?: boolean;
   isDeleted?: boolean;
+
+  point?: number; //user reputation
 };

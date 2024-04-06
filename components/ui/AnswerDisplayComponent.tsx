@@ -29,10 +29,12 @@ export default function AnswerDisplay({
   ans,
   current_user_id,
   user_prev_vote,
+  rep,
 }: {
   ans: Answer;
   current_user_id: string;
   user_prev_vote: { thread_ref: string; direction: VoteEnum }[];
+  rep: number;
 }): JSX.Element {
   const fromUser = useRef(ans.user_id === current_user_id);
 
@@ -97,10 +99,14 @@ export default function AnswerDisplay({
             id={ans.user_id}
             size="7"
             username={ans.user_name}
+            rep={ans.point}
           />
           <p className="text-xs text-gray-400">
             {fromUser.current ? "You" : "@" + ans.user_name} -{" "}
             {moment(new Date(ans.created_at)).fromNow()}
+            <span className={"text-info font-semibold"}>
+              {ans.point && ` ${ans.point} RP`}
+            </span>
           </p>
           {ans.isEdited && <p className="text-xs text-gray-400">(Edited)</p>}
           {!ans.status && fromUser && (
@@ -133,6 +139,7 @@ export default function AnswerDisplay({
         <div>
           <CommentComponent
             mode="answer"
+            rep={rep}
             user_id={current_user_id}
             source_ref={ans.source_ref}
             thread_id={ans.thread_ref}

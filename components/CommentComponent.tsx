@@ -30,6 +30,7 @@ import Link from "next/link";
 import { modes } from "@/types/modes.type";
 import { comment } from "@/types/comment.type";
 import { isAfterEditWins } from "@/utils/checkdate";
+import { POINT_SYS_GUARD } from "@/defaults/points.system";
 
 interface Prop {
   thread_id: string;
@@ -37,18 +38,28 @@ interface Prop {
   user_id: string | undefined;
   source_user_id: string;
   mode: "question" | "answer" | "post";
+  rep: number;
 }
 
-export default function CommentComponent(
-  { thread_id, source_ref, user_id, source_user_id, mode }: Prop,
-) {
-  const [commentMode, setCommentMode] = useState<
-    { reply_to: string; mode: modes; reply_name: string }
-  >({ reply_to: source_user_id, mode: mode, reply_name: "" });
+export default function CommentComponent({
+  thread_id,
+  source_ref,
+  user_id,
+  source_user_id,
+  rep,
+  mode,
+}: Prop) {
+  const [commentMode, setCommentMode] = useState<{
+    reply_to: string;
+    mode: modes;
+    reply_name: string;
+  }>({ reply_to: source_user_id, mode: mode, reply_name: "" });
 
   const [newComment, setNewComment] = useState<comment[]>([]);
   const [openComment, setOpenComment] = useState<boolean>(mode === "post");
   const [isSubmitting, setIsSubmiting] = useState<boolean>(false);
+
+  const allowComment = rep >= POINT_SYS_GUARD["comment"];
 
   const [state, formAction] = useFormState(
     CreateComment,
@@ -66,19 +77,17 @@ export default function CommentComponent(
     );
   }
 
-  const form = useForm<z.infer<typeof commentSchema>>(
-    {
-      resolver: zodResolver(commentSchema),
-      defaultValues: {
-        mode: mode,
-        receviver: source_user_id, //comment is aimed at the post, or the question owner default
-        content: "",
-        thread_id: thread_id,
-        parent_id: source_ref,
-        user_id: user_id,
-      },
+  const form = useForm<z.infer<typeof commentSchema>>({
+    resolver: zodResolver(commentSchema),
+    defaultValues: {
+      mode: mode,
+      receviver: source_user_id, //comment is aimed at the post, or the question owner default
+      content: "",
+      thread_id: thread_id,
+      parent_id: source_ref,
+      user_id: user_id,
     },
-  );
+  });
 
   //INFO: handle data when submit completed
   useEffect(() => {
@@ -116,7 +125,6 @@ export default function CommentComponent(
   };
 
   const replyHandler = (data: SelectedHandler) => {
-    // console.log("replyHandler", data.id != source_user_id);
     if (!data.isDefault) {
       setCommentMode({
         reply_to: data.data.comment_user_id,
@@ -131,6 +139,14 @@ export default function CommentComponent(
       });
     }
   };
+
+  const placeHolderText = user_id
+    ? allowComment
+      ? ` Your though of to this ${commentMode.mode} ${
+          commentMode.reply_name ? "- owner: @" + commentMode.reply_name : ""
+        }- Press <Enter> to submit `
+      : `Your must have ${POINT_SYS_GUARD["comment"]} reputation points to comment`
+    : "Login to leave a comment";
 
   return (
     <div
@@ -166,24 +182,20 @@ export default function CommentComponent(
                   isSubmitting ? "cursor-wait" : "cursor-pointer"
                 } hover:text-secondary-foreground py-2`}
               >
-                {isSubmitting
-                  ? (
-                    <div className="flex gap-1">
-                      <span className="loading loading-dots loading-xs">
-                      </span>
-                      <span>Submitting comment</span>
-                    </div>
-                  )
-                  : "Add a comment"}
+                {isSubmitting ? (
+                  <div className="flex gap-1">
+                    <span className="loading loading-dots loading-xs"></span>
+                    <span>Submitting comment</span>
+                  </div>
+                ) : (
+                  "Add a comment"
+                )}
               </span>
             </CollapsibleTrigger>
           </div>
           <CollapsibleContent>
             <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(submit)}
-                className=""
-              >
+              <form onSubmit={form.handleSubmit(submit)} className="">
                 <FormField
                   control={form.control}
                   name="content"
@@ -192,14 +204,10 @@ export default function CommentComponent(
                       <FormControl>
                         <Input
                           type="text"
-                          placeholder={` Your though of to this ${commentMode.mode} ${
-                            commentMode.reply_name
-                              ? "- owner: @" + commentMode.reply_name
-                              : ""
-                          }- Press <Enter> to submit `}
+                          placeholder={placeHolderText}
                           className="text-xs"
                           {...field}
-                          disabled={!user_id}
+                          disabled={!user_id || !allowComment}
                         />
                       </FormControl>
                       <FormDescription />
@@ -222,9 +230,7 @@ export default function CommentComponent(
  * @param x Comment_Optimistic | MessageObject
  * @returns boolean
  */
-const isComment = (
-  x: comment | MessageObject,
-): x is comment => {
+const isComment = (x: comment | MessageObject): x is comment => {
   const res = (x as comment).id != undefined;
   return res;
 };
@@ -234,8 +240,6 @@ const isComment = (
  * @param x comment | MessageObject
  * @returns boolean
  */
-const isMessage = (
-  x: comment | MessageObject,
-): x is MessageObject => {
+const isMessage = (x: comment | MessageObject): x is MessageObject => {
   return (x as MessageObject).ok != undefined;
 };
