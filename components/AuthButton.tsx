@@ -14,9 +14,11 @@ import { showLoading } from "@/utils/loading.service";
 import nProgress from "nprogress";
 import { toast } from "react-toastify";
 import userService from "@/services/user.services";
+import { LogOut } from "lucide-react";
 
 export default function AuthButton() {
   const [log, setLog] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const router = useRouter();
   const pathName = usePathname();
   const [refetch, setRefetch] = useState(true);
@@ -28,7 +30,10 @@ export default function AuthButton() {
   }, []);
   useEffect(() => {
     const supabase = createClientComponentClient();
-    supabase.auth.getUser().then((data) => setLog(data.data.user));
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setLog(user);
+      fetchAuthorization(user?.id);
+    });
     router.prefetch("/profile");
   }, [refetch]);
 
@@ -48,8 +53,36 @@ export default function AuthButton() {
     router.push("/profile", { scroll: false });
   };
 
+  const fetchAuthorization = async (id?: string) => {
+    if (!id) setIsAdmin(false);
+    const supabase = createClientComponentClient();
+    const { data } = await supabase
+      .from("User")
+      .select("role")
+      .eq("id", id)
+      .single<{ role: string }>();
+    if (data?.role === "admin") {
+      setIsAdmin(true);
+    }
+  };
   return log ? (
     <div className="flex py-3 max-h-9 items-center gap-4">
+      {isAdmin &&
+        (!usePathname().startsWith("/admin") ? (
+          <Link
+            href="/admin"
+            className="btn btn-sm rounded-md transition-all hover:bg-accent"
+          >
+            Go to admin dashboard
+          </Link>
+        ) : (
+          <Link
+            href="/"
+            className="btn btn-sm rounded-md transition-all hover:bg-accent"
+          >
+            Go back to codepium
+          </Link>
+        ))}
       <Avatar>
         <AvatarImage
           className="cursor-pointer"
@@ -62,10 +95,13 @@ export default function AuthButton() {
       </Avatar>
       <form action={onSubmit}>
         <button
+          aria-label="Sign out"
+          title="Sign out"
           className="py-2 px-4 rounded-md no-underline bg-btn-background hover:bg-hslvar"
           onClick={() => nProgress.start()}
+          type="submit"
         >
-          Logout
+          <LogOut size={20} />
         </button>
       </form>
     </div>

@@ -9,29 +9,29 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export async function signIn(
-  prev: any,
+  _: any,
   formData: FormData,
 ): Promise<MessageObject> {
-  const validate = authSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
-  });
-  if (!validate.success) {
-    return {
-      message: "Log in unsuccessful, please check you email or password",
-      ok: false,
-    };
+  try {
+    const validate = authSchema.safeParse({
+      email: formData.get("email"),
+      password: formData.get("password"),
+    });
+    /* INFO: Validation failed*/
+    if (!validate.success) {
+      const msg = "Log in unsuccessful, please check you email or password";
+      throw new Error(msg);
+    }
+    const { error } = await Supabase().auth.signInWithPassword({
+      email: validate.data.email,
+      password: validate.data.password,
+    });
+    /* INFO: Sign in failed*/
+    if (error) throw error;
+    return { message: "Log in successful", ok: true };
+  } catch (err: any) {
+    return { message: err.message, ok: false };
   }
-  const { error } = await Supabase().auth.signInWithPassword({
-    email: validate.data.email,
-    password: validate.data.password,
-  });
-  if (error) {
-    console.log(error);
-
-    return { message: error.message, ok: false };
-  }
-  return { message: "Log in successful", ok: true };
 }
 
 export async function signOut() {
@@ -40,8 +40,9 @@ export async function signOut() {
   await supabase.auth.signOut();
   return redirect("/");
 }
+
 export async function signUp(
-  prev: any,
+  _: any,
   formData: FormData,
 ): Promise<MessageObject> {
   const validate = authSchema.safeParse({

@@ -6,7 +6,6 @@ import DrawerHost from "@/components/navigation-bar";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import AuthButton from "@/components/AuthButton";
-import { Input } from "@/components/ui/input";
 import { Flip, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingProvider from "@/components/Loading";
