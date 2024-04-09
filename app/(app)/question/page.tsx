@@ -23,7 +23,6 @@ export default async function Page({
       notFound();
     }
     filter = data;
-    console.log("dsudsdu", data);
   }
   return (
     <div className="w-full flex flex-col px-8 mt-3 mb-10 gap-3">

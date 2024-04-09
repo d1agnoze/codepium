@@ -21,7 +21,7 @@ async function Layout({ children }: { children: React.ReactNode }) {
     <>
       <div className="drawer lg:drawer-open drawer-end">
         <input id="drawer" type="checkbox" className="drawer-toggle" />
-        <div className="drawer-content flex flex-col">
+        <div className="drawer-content flex flex-col pb-10">
           {f_err && <SimpleAlert text={f_err} variant="error" />}
           {children}
         </div>

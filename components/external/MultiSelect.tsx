@@ -50,7 +50,7 @@ const MultiSelect = (
   );
 
   const selectables = data.filter((item: Expertise) =>
-    !selected.includes(item)
+    !(selected.map(x => x.id).includes(item.id))
   );
 
   return (

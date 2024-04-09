@@ -24,6 +24,7 @@ import {
 import { toast } from "react-toastify";
 import nProgress from "nprogress";
 import Profile from "../general/Avatar";
+import AdminAction from "../edit/AdminActionComponent";
 
 export default function AnswerDisplay({
   ans,
@@ -131,6 +132,10 @@ export default function AnswerDisplay({
             visible={ans.user_id === current_user_id}
             id={ans!.thread_ref}
             prevContent={ans.content}
+          />
+          <AdminAction
+            thread_ref={ans.thread_ref}
+            action={ans.status ? "unverify" : "verify"}
           />
         </div>
         <div className="pt-3 flex-grow">

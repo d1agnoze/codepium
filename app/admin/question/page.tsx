@@ -2,19 +2,28 @@
 
 import { DataTable } from "@/components/ui/data-table";
 import { FetchError } from "@/helpers/error/FetchError";
-import { question_seo } from "@/types/question.seo";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { columns } from "./columns";
+import { question_admin } from "@/types/question.admin";
 
 export default async function Page() {
   try {
-    const question_seo = await getData();
+    const question_admin = await getData();
 
     /*TODO: finish question admin page*/
     return (
       <div className="container mx-auto">
-        <DataTable columns={columns} data={question_seo} />
+        <DataTable
+          columns={columns}
+          data={question_admin}
+          filter_col={[
+            { key: "id", label: "Question's id" },
+            { key: "title", label: "Title" },
+            { key: "user_id", label: "User's id" },
+            { key: "stars", label: "Votes" },
+          ]}
+        />
       </div>
     );
   } catch (err: any) {
@@ -22,12 +31,13 @@ export default async function Page() {
   }
 }
 
-async function getData(): Promise<question_seo[]> {
+async function getData(): Promise<question_admin[]> {
   const supabase = createServerActionClient({ cookies: () => cookies() });
   const { data, error } = await supabase
-    .from("get_question_seo")
+    .from("get_question_admin")
     .select()
-    .returns<question_seo[]>();
+    .returns<question_admin[]>();
   if (!data || error) throw new FetchError(error.message);
   return data;
 }
+// async function

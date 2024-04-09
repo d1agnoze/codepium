@@ -1,8 +1,9 @@
-export type question_seo = {
+export type question_admin = {
   id: string;
   title: string;
   stars: number;
   status: boolean;
+
   user_id: string;
 
   tag: string[];
@@ -10,4 +11,6 @@ export type question_seo = {
 
   created_at: string;
   answer_count: number;
+
+  isArchieved?: boolean;
 };

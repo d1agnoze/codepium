@@ -40,6 +40,7 @@ export async function GET(request: Request) {
     .in("mode", [validated.data.mode, "comment"]);
 
   if (count_err != null || count_data == null) {
+    console.log('Count error: ', count_err);
     return ServerError();
   }
   if (count_data === 0) {
@@ -52,6 +53,7 @@ export async function GET(request: Request) {
   ).returns<comment[]>();
 
   if (error != null) {
+    console.log('Get comment error: ', error);
     return ServerError();
   }
 

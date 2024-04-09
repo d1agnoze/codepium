@@ -25,6 +25,7 @@ import { sha256 } from "js-sha256";
 import { ChevronsUpDown } from "lucide-react";
 import moment from "moment";
 import { cookies } from "next/headers";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 export default async function Page({ params }: { params: { id: string } }) {
@@ -149,13 +150,21 @@ export default async function Page({ params }: { params: { id: string } }) {
                   editSite={"/profile/edit/question/" + data!.id}
                 />
               </div>
-              <section className="w-full flex gap-1">
-                {tags?.slice(0, 2).map((tag) => (
-                  <Badge className="bg-accent text-xs" key={tag.id}>
-                    {tag.display_name}
+              <section
+                className="w-full flex gap-1 flex-wrap"
+                title={tags?.map((tag) => tag.display_name).join(", ")}
+              >
+                {tags?.map((tag) => (
+                  <Badge
+                    className="bg-accent text-primary-foreground cursor-pointer"
+                    variant={"small"}
+                    key={tag.id}
+                  >
+                    <Link href={`/question?filter=${tag.id}`}>
+                      {tag.display_name}
+                    </Link>
                   </Badge>
                 ))}
-                {tags && tags.length > 3 && <pre className="text-md">...</pre>}
               </section>
               <h1 className="font-semibold text-xl">{data!.title}</h1>
               <main className="mt-1">
@@ -216,14 +225,13 @@ export default async function Page({ params }: { params: { id: string } }) {
         <div className="flex flex-col gap-3">
           {answers
             ?.sort((a, b) => {
-              if (a.status === b.status) {
-                return a.stars - b.stars;
-              } else {
-                return +b.status - +a.status;
-              }
+              return a.status === b.status
+                ? a.stars - b.stars
+                : +b.status - +a.status;
             })
             .map((ans) => (
               <AnswerDisplay
+                rep={ans?.point ?? 0}
                 current_user_id={user?.id ?? ""}
                 key={ans.thread_ref}
                 ans={ans}

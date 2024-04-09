@@ -95,7 +95,7 @@ export default function QuestionForm() {
   };
 
   return (
-    <div className="mx-4">
+    <div className="mx-4 flex-grow">
       <h1 className="text-2xl font-semibold mb-5">Create a question thread</h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(submit)} className="space-y-8">
