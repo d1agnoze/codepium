@@ -17,6 +17,8 @@ import QuestionArchiveDialog from "@/components/dialogs/question_archive";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ChangeExpertise from "@/components/dialogs/change_exp";
+import moment from "moment";
+import QuestionRestoreDialog from "@/components/dialogs/question_restore";
 
 export const columns: ColumnDef<question_admin>[] = [
   { id: "No", header: "No", cell: ({ row }) => row.index + 1 },
@@ -26,7 +28,13 @@ export const columns: ColumnDef<question_admin>[] = [
     enableSorting: false,
     cell: ({ row }) => <div className="truncate w-14">{row.original.id}</div>,
   },
-  { accessorKey: "title", header: "Title" },
+  {
+    accessorKey: "title",
+    header: "Title",
+    cell: ({ row }) => (
+      <div className="truncate w-80">{row.original.title}</div>
+    ),
+  },
   { accessorKey: "stars", header: "Votes" },
   {
     accessorKey: "answer_count",
@@ -83,6 +91,18 @@ export const columns: ColumnDef<question_admin>[] = [
     ),
   },
   {
+    accessorKey: "created_at",
+    header: "Created At",
+    enableSorting: true,
+    cell: ({ row }) => (
+      <div>
+        {moment(new Date(row.original.created_at))
+          .format("DD-MM-YYYY")
+          .toString()}
+      </div>
+    ),
+  },
+  {
     accessorKey: "isArchieved",
     header: ({ column }) => (
       <Button
@@ -115,7 +135,7 @@ export const columns: ColumnDef<question_admin>[] = [
       });
 
       const onSuccess = () => {
-        toast.success("Question archived");
+        toast.success("Action success");
         router.refresh();
         setOpen(false);
       };
@@ -149,50 +169,42 @@ export const columns: ColumnDef<question_admin>[] = [
               </DropdownMenuItem>
             </ChangeExpertise>
 
-            <QuestionArchiveDialog id={question.id} onSuccess={onSuccess}>
-              <DropdownMenuItem
-                onSelect={(e) => e.preventDefault()}
-                className="focus:bg-destructive"
-                disabled={question.isArchieved}
-              >
-                Archive question
-              </DropdownMenuItem>
-            </QuestionArchiveDialog>
+            {!question.isArchieved && (
+              <QuestionArchiveDialog id={question.id} onSuccess={onSuccess}>
+                <DropdownMenuItem
+                  onSelect={(e) => e.preventDefault()}
+                  className="focus:bg-destructive"
+                  disabled={question.isArchieved}
+                >
+                  Archive question
+                </DropdownMenuItem>
+              </QuestionArchiveDialog>
+            )}
+            {question.isArchieved && (
+              <QuestionRestoreDialog id={question.id} onSuccess={onSuccess}>
+                <DropdownMenuItem
+                  onSelect={(e) => e.preventDefault()}
+                  disabled={!question.isArchieved}
+                >
+                  Restore question
+                </DropdownMenuItem>
+              </QuestionRestoreDialog>
+            )}
 
             <DropdownMenuSeparator />
             <DropdownMenuLabel>Navigate</DropdownMenuLabel>
-            <DropdownMenuItem>
-              <Link href={`/question/${question.id}`}>
-                View question details
-              </Link>
-            </DropdownMenuItem>
+            {!question.isArchieved && (
+              <DropdownMenuItem>
+                <Link href={`/question/${question.id}`}>
+                  View question details
+                </Link>
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );
     },
   },
-  /* {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  }, */
 ];
 
 const copyToClipboard = (value: string, message: string) => {

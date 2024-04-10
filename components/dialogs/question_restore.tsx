@@ -8,12 +8,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ReactNode,useState } from "react";
+import { ReactNode, useState } from "react";
 import { Button } from "../ui/button";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
-import { ArchieveQuestion } from "@/app/admin/question/actions";
 import { toast } from "react-toastify";
+import { RestoreQuestion } from "@/app/admin/question/actions";
 
 type PropsWithChildren<P> = P & { children?: ReactNode };
 interface Props {
@@ -21,19 +19,18 @@ interface Props {
   onSuccess: () => void;
 }
 
-const QuestionArchiveDialog = ({
+const QuestionRestoreDialog = ({
   id,
   children,
   onSuccess,
 }: PropsWithChildren<Props>) => {
   const [isSubmiting, setIsSubmiting] = useState<boolean>(false);
-  const [inputValue, setInputValue] = useState<string>("");
   const [open, setOpen] = useState(false);
 
   const onSubmit = async () => {
     try {
       setIsSubmiting(true);
-      await ArchieveQuestion(id, inputValue);
+      await RestoreQuestion(id);
       onSuccess();
     } catch (err: any) {
       toast.error(err.message);
@@ -47,30 +44,16 @@ const QuestionArchiveDialog = ({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Archive question</DialogTitle>
+          <DialogTitle>Restore Question</DialogTitle>
           <DialogDescription>
-            This action can not be undone. Please specify the archive reason
+            Are you sure you want to restore this question?
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="reason" className="text-right">
-              Archive Reason
-            </Label>
-            <Input
-              id="reason"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              defaultValue="@peduarte"
-              className="col-span-3"
-            />
-          </div>
-        </div>
         <DialogFooter>
           <Button
             aria-disabled={isSubmiting}
             disabled={isSubmiting}
-            variant={"destructive"}
+            variant={"default"}
             onClick={() => onSubmit()}
           >
             Save changes
@@ -85,4 +68,4 @@ const QuestionArchiveDialog = ({
     </Dialog>
   );
 };
-export default QuestionArchiveDialog;
+export default QuestionRestoreDialog;

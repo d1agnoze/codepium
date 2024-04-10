@@ -231,7 +231,7 @@ export default async function Page({ params }: { params: { id: string } }) {
             })
             .map((ans) => (
               <AnswerDisplay
-                rep={ans?.point ?? 0}
+                rep={point}
                 current_user_id={user?.id ?? ""}
                 key={ans.thread_ref}
                 ans={ans}

@@ -24,8 +24,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <LayoutDashboard className="h-6 w-6" />
             <span className="sr-only">Codepium</span>
           </Link>
-          {NavbarIndexes.map((item) => (
+          {NavbarIndexes.map((item, index) => (
             <Link
+              key={index}
               href={`/admin/${item.url}`}
               className={`text-${current.startsWith(`/admin/${item.url}`) ? "" : "muted-"}foreground transition-colors hover:text-foreground`}
             >

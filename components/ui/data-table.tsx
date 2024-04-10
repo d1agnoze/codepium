@@ -212,6 +212,9 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="text-muted-foreground">
+          Total record: {table.getFilteredRowModel().rows.length}
+        </div>
         <DataTablePagination table={table} />
       </div>
     </div>
