@@ -95,8 +95,8 @@ export function DataTable<TData, TValue>({
                 <SelectValue placeholder="Filtered by" />
               </SelectTrigger>
               <SelectContent>
-                {filter_col?.map((col) => (
-                  <SelectItem value={col.key.toString()}>
+                {filter_col?.map((col, index) => (
+                  <SelectItem value={col.key.toString()} key={index}>
                     {col.label}
                   </SelectItem>
                 ))}
