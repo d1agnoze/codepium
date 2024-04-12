@@ -1,5 +1,6 @@
 import { Separator } from "@/components/ui/separator";
 import {
+  Medal,
   MessageCircleQuestion,
   MessageCircleReply,
   Newspaper,
@@ -12,6 +13,16 @@ const Statistic = ({ statistic }: { statistic: Statistic }) => {
       <h1 className="text-2xl font-bold">📈 User statistic</h1>
       <Separator className="my-2" />
       <div className="mx-3 grid grid-cols-3 gap-4">
+        <div className="bg-hslvar rounded-lg px-4 py-5 relative overflow-hidden">
+          <div className="absolute bottom-0 right-0 opacity-25">
+            <Medal size={90} />
+          </div>
+          <div>
+            <p className="text-lg">Reputation</p>
+            <p className="text-xl">{statistic.point}</p>
+          </div>
+        </div>
+
         <div className="bg-hslvar rounded-lg px-4 py-5 relative overflow-hidden">
           <div className="absolute bottom-0 right-0 opacity-25">
             <Vote size={90} />
@@ -28,7 +39,7 @@ const Statistic = ({ statistic }: { statistic: Statistic }) => {
           </div>
           <div>
             <p className="text-lg">Answer given</p>
-            <p className="text-xl font-bold">{statistic.answer_count}</p>
+            <p className="text-xl">{statistic.answer_count}</p>
           </div>
         </div>
 

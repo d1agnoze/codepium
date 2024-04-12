@@ -1,10 +1,12 @@
 import {
   BarChart3,
+  Bell,
   Book,
   MessageCircleQuestion,
   PanelRightOpen,
   PlusSquare,
   Settings,
+  Ticket,
   UserRound,
 } from "lucide-react";
 import Link from "next/link";
@@ -31,8 +33,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             htmlFor="drawer"
             aria-label="close sidebar"
             className="drawer-overlay"
-          >
-          </label>
+          ></label>
           <ul className="rounded-md menu p-4 w-56 min-h-full bg-hslvar shadow-md max-md:pt-20">
             {/* Sidebar content here */}
             <li>
@@ -52,18 +53,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             </li>
             <li>
-              <Link href={"#"}>
+              <Link href={"/profile/my-questions"}>
                 <MessageCircleQuestion /> My questions
               </Link>
             </li>
             <li>
-              <Link href={"#"}>
+              <Link href={"/profile/my-posts"}>
                 <Book /> My posts
               </Link>
             </li>
             <li>
               <Link href={"#"}>
-                <BarChart3 /> Progressions
+                <Ticket /> Tickets
+              </Link>
+            </li>
+            <li>
+              <Link href={"/profile/notification"}>
+                <Bell /> Notification
               </Link>
             </li>
             <li>

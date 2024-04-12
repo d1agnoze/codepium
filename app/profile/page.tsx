@@ -1,8 +1,10 @@
 "use server";
 
+import Personalization from "@/components/dialogs/change-user-images.dialog";
 import ProfileShowCase from "@/components/server/profile/ProfileShowcase";
 import Statistic from "@/components/server/profile/Statistic";
 import StopLoading from "@/components/stoploading";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { get_user_seo } from "@/types/get_user_seo.dto";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
@@ -44,10 +46,13 @@ export default async function Page() {
   };
 
   return (
-    <div className="flex flex-col justify-center box-border px-2">
+    <div className="flex flex-col justify-center box-border px-2 relative">
       <ProfileShowCase {...profile_prop} />
       {/*INFO: stop loading to hide loading icon */}
       <StopLoading />
+      <div className="absolute top-1 right-3">
+        <Personalization user={user}/>
+      </div>
       <div className="container">
         <div className="w-full flex flex-col gap-2 bg-hslvar rounded-md px-5 py-3 mb-3">
           <div className="flex gap-1">

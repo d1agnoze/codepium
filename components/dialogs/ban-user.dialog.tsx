@@ -14,6 +14,7 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { toast } from "react-toastify";
 import { BanUser } from "@/app/admin/user/actions";
+import { Textarea } from "../ui/textarea";
 
 type PropsWithChildren<P> = P & { children?: ReactNode };
 interface Props {
@@ -28,12 +29,13 @@ const BanUserDialog = ({
 }: PropsWithChildren<Props>) => {
   const [isSubmiting, setIsSubmiting] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState<number>(0);
+  const [reasonInput, setReasonInput] = useState<string>("");
   const [open, setOpen] = useState(false);
 
   const onSubmit = async () => {
     try {
       setIsSubmiting(true);
-      await BanUser(id, inputValue);
+      await BanUser(id, inputValue, reasonInput);
       onSuccess();
     } catch (err: any) {
       toast.error(err.message);
@@ -49,16 +51,17 @@ const BanUserDialog = ({
         <DialogHeader>
           <DialogTitle>Ban user</DialogTitle>
           <DialogDescription>
-            Ban an user for a duration of time
+            Ban an user for a duration of time, an email will be sent to said
+            user
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="reason" className="text-right">
+            <Label htmlFor="duration" className="text-right">
               Ban duration (days)
             </Label>
             <Input
-              id="reason"
+              id="duration"
               type="number"
               value={inputValue}
               min={0}
@@ -66,7 +69,15 @@ const BanUserDialog = ({
               onChange={(e) => setInputValue(+e.target.value)}
               className="col-span-3"
             />
-            
+            <Label htmlFor="reason" className="text-right">
+              Ban reason (days)
+            </Label>
+            <Textarea
+              id="reason"
+              className="col-span-3"
+              value={reasonInput}
+              onChange={(e) => setReasonInput(e.target.value)}
+            />
           </div>
         </div>
         <DialogFooter>

@@ -14,7 +14,7 @@ const ProfileShowCase = (user: Props) => {
         <Image
           src={user!.background_image}
           fill={true}
-          className="z-0 rounded-lg"
+          className="object-cover z-0 rounded-lg"
           priority={true}
           alt="user's background image"
         />

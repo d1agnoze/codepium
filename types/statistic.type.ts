@@ -3,4 +3,6 @@ type Statistic = {
   answer_verified_count: number;
   question_count: number;
   post_count: number;
+
+  point: number
 };

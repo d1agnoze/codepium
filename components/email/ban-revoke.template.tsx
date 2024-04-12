@@ -12,6 +12,7 @@ export const BanRevoke: React.FC<Readonly<EmailTemplateProps>> = ({
     backgroundColor: "black",
     color: "white",
     borderRadius: "10px",
+    textAlign: "center",
   };
   const buttonStyle: React.CSSProperties = {
     padding: "10px",
@@ -19,23 +20,26 @@ export const BanRevoke: React.FC<Readonly<EmailTemplateProps>> = ({
     color: "black",
     borderRadius: "5px",
     textDecoration: "none",
-    display: "inline-block",
     fontWeight: "bold",
+    width: "300px",
+    marginLeft: "auto",
+    marginRight: "auto",
   };
-  const footerStyle: React.CSSProperties = {
-    marginTop: "30px",
-  };
+  const textStyle: React.CSSProperties = { color: "white" };
+  const footerStyle: React.CSSProperties = { marginTop: "30px" };
   return (
     <div style={rootStyle}>
       <h1>Hi there, {userName}!</h1>
-      <p>Your codepium ban has been revoked.</p>
-      <p>and all your accesses to codepium has now return to normal</p>
+      <p style={textStyle}>Your codepium ban has been revoked.</p>
+      <p style={textStyle}>All your accesses to codepium has now return to normal</p>
       <a href="#" style={buttonStyle}>
         Go to Codepium
       </a>
       <br />
       <br />
-      <strong style={footerStyle}>Codepium Team</strong>
+      <footer style={footerStyle}>
+        <strong style={textStyle}>Codepium Team</strong>
+      </footer>
     </div>
   );
 };

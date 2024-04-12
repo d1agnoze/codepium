@@ -10,22 +10,13 @@ import {
   getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
-  VisibilityState,
 } from "@tanstack/react-table";
 import {
   Table,
-  TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -33,38 +24,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "./button";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { DataTablePagination } from "./data-table-pagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { RefreshCcw } from "lucide-react";
+import { question_seo } from "@/types/question.seo";
+import Question from "./QuestionSEODisplay";
 
-interface DataTableProps<TData, TValue> {
+interface DataTableProps<TData extends question_seo, TValue = question_seo> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   filter_col?: { key: keyof TData; label: string }[];
 }
-/** IMPORTANT:
- *  the following features is enabled on this component
- *  ✅ sorting
- *  ✅ filtering
- *  ✅ column visibility
- *  ❌ row selection - disabled cuz i dont really want to code it
- *
- * @components DATA TABLE
- * @property {ColumnDef[]} columns
- * @property {TData[]} data
- * */
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-  filter_col,
-}: DataTableProps<TData, TValue>) {
+export function QuestionDataTable<
+  TData extends question_seo,
+  TValue = question_seo,
+>({ columns, data, filter_col }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [filteredData, setFilteredData] = useState<string | null>(null);
-  // const [rowSelection, setRowSelection] = useState({});
   const table = useReactTable({
     data,
     columns,
@@ -74,13 +53,9 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    // onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
-      columnVisibility,
-      // rowSelection
     },
   });
 
@@ -104,7 +79,7 @@ export function DataTable<TData, TValue>({
             </Select>
             {filteredData && (
               <Input
-                placeholder={`Filter by ${filter_col.find((x) => x.key === filteredData)?.label}`}
+                placeholder="Filter title..."
                 value={
                   (table
                     .getColumn(filteredData.toString())
@@ -133,32 +108,6 @@ export function DataTable<TData, TValue>({
             </span>
             <span>Reset</span>
           </Button>
-
-          {/* INFO: column visibility*/}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">Columns</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </div>
       <div className="rounded-md border">
@@ -181,36 +130,18 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
         </Table>
       </div>
+      {table.getRowModel().rows?.length ? (
+        table.getRowModel().rows.map((row) => (
+          <div className="my-3">
+            <Question question={row.original} />
+          </div>
+        ))
+      ) : (
+        <div className="h-24 text-center">No results.</div>
+      )}
+
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="text-muted-foreground">
           Total record: {table.getFilteredRowModel().rows.length}

@@ -1,4 +1,5 @@
 import { BanRevoke } from "@/components/email/ban-revoke.template";
+import { BanTemplate } from "@/components/email/ban.template";
 import { Resend } from "resend";
 
 export class EmailService {
@@ -15,7 +16,15 @@ export class EmailService {
     reason: string,
   ) {
     try {
+      const { error } = await this.resend.emails.send({
+        from: "Codepium <codepium-team@resend.dev>",
+        to: [email],
+        subject: "About your ban on codepium",
+        text: "Your account ban has been revoked",
+        react: BanTemplate({ userName, duration, reason }),
+      });
 
+      if (error) throw new Error(error.message);
     } catch (err: any) {
       throw err;
     }
@@ -23,7 +32,7 @@ export class EmailService {
 
   async sendRevokBanEmail(email: string, userName: string) {
     try {
-      const { data, error } = await this.resend.emails.send({
+      const { error } = await this.resend.emails.send({
         from: "Codepium <codepium-team@resend.dev>",
         to: [email],
         subject: "About your ban on codepium",
@@ -31,11 +40,7 @@ export class EmailService {
         react: BanRevoke({ userName }),
       });
 
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      console.log({ data });
+      if (error) throw new Error(error.message);
     } catch (err: any) {
       throw err;
     }

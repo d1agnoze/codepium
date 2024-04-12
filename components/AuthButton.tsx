@@ -14,7 +14,8 @@ import { showLoading } from "@/utils/loading.service";
 import nProgress from "nprogress";
 import { toast } from "react-toastify";
 import userService from "@/services/user.services";
-import { LogOut } from "lucide-react";
+import { BellDot, LogOut } from "lucide-react";
+import Notification from "./realtime/Notification";
 
 export default function AuthButton() {
   const [log, setLog] = useState<User | null>(null);
@@ -83,6 +84,7 @@ export default function AuthButton() {
             Go back to codepium
           </Link>
         ))}
+      <Notification id={log.id}/>
       <Avatar>
         <AvatarImage
           className="cursor-pointer"
