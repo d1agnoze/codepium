@@ -1,5 +1,7 @@
 "use server";
 
+import { redirect } from "next/navigation";
+
 export default async function Page() {
-  return <div>Hello from admin</div>;
+  redirect("/admin/user");
 }

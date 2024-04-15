@@ -9,6 +9,7 @@ const NavbarIndexes: { url: string; label: string }[] = [
   { url: "expertise", label: "Expertises" },
   { url: "question", label: "Questions" },
   { url: "post", label: "Posts" },
+  { url: "ticket", label: "Support Tickets" },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {

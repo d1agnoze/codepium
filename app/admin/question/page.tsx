@@ -10,8 +10,6 @@ import { question_admin } from "@/types/question.admin";
 export default async function Page() {
   try {
     const question_admin = await getData();
-
-    /*TODO: finish question admin page*/
     return (
       <div className="container mx-auto">
         <DataTable

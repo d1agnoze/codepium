@@ -4,7 +4,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Bell, BellDot, Check } from "lucide-react";
+import { Bell, BellDot, Check} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -124,19 +124,12 @@ const Notification = (props: Props) => {
           <CardHeader>
             <CardTitle>Notifications</CardTitle>
             {!read ?? (
-              <CardDescription>You have 3 unread messages.</CardDescription>
+              <CardDescription>You have unread messages.</CardDescription>
             )}
           </CardHeader>
-          <CardContent className="grid gap-4">
+          <CardContent className="gap-4">
             <div>
-              {loading &&
-                Array.from({ length: 3 }).map((_, index) => (
-                  <Skeleton
-                    className="w-full h-12 bg-hslvar mb-3"
-                    key={index}
-                  />
-                ))}
-
+              {loading && <Loading />}
               {data == null ? (
                 <div>No notification found</div>
               ) : (
@@ -144,18 +137,19 @@ const Notification = (props: Props) => {
                   <div
                     key={index}
                     onClick={() => navigateTo(item.source_ref)}
-                    className="mb-4 grid grid-cols-[25px_1fr] items-start px-3 py-1 transition-all rounded-md last:mb-0 last:pb-0 hover:bg-secondary"
+                    className="mb-4 grid grid-cols-1 items-start px-2 py-1 transition-all rounded-md last:mb-0 last:pb-0 hover:bg-secondary"
                   >
-                    <span
-                      className={`flex h-2 w-2 translate-y-1 rounded-full ${item.new === true ? "bg-accent" : ""}`}
-                    />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none truncate">
-                        {item.message}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {moment(item.created_at).fromNow()}
-                      </p>
+                    <div className="flex gap-2 w-full text-sm font-medium leading-none">
+                      {item.new === true && (
+                        <span className="h-2 w-2 rounded-full bg-accent mt-2" />
+                      )}
+
+                      <div className="flex flex-col gap-2 truncate">
+                        <p className="truncate">{item.message}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {moment(item.created_at).fromNow()}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 ))
@@ -186,3 +180,9 @@ const Notification = (props: Props) => {
 };
 
 export default Notification;
+
+const Loading = () => {
+  return Array.from({ length: 3 }).map((_, index) => (
+    <Skeleton className="w-full h-12 bg-hslvar mb-3" key={index} />
+  ));
+};
