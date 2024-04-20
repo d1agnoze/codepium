@@ -6,8 +6,6 @@ import { useEffect, useState } from "react";
 import { VoteEnum } from "@/enums/vote.enum";
 import { VoteMode } from "@/enums/vote-mode.enum";
 import { toast } from "react-toastify";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { voteSchema } from "@/schemas/vote.schema";
 import { createVote } from "@/app/(app)/actions";
 
 interface VotingProps {

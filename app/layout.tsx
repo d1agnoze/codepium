@@ -13,12 +13,13 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { NavigationEvents } from "@/components/NavigationEvents";
 import { Facebook, Github, Linkedin } from "lucide-react";
+import { Metadata } from "next";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : "http://localhost:3000";
 
-export const metadata = {
+export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: "Codepium 🐸",
   description: "print('welcome to codepium!')",
