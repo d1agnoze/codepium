@@ -9,15 +9,22 @@ import { MessageObject } from "@/types/message.route";
 import { Question } from "@/types/question.type";
 import Supabase from "@/utils/supabase/server-action";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
-import { PostgrestSingleResponse } from "@supabase/supabase-js";
+import { PostgrestSingleResponse, User } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { NotFoundError } from "@/helpers/error/NotFoundError";
+import { FetchError } from "@/helpers/error/FetchError";
+import { Answer } from "@/types/answer.type";
+import { VoteEnum } from "@/enums/vote.enum";
+import { calculateVotes_remade } from "@/utils/vote.utils";
 
 export async function AnswerQuestion(
   _: any,
   formData: FormData,
 ): Promise<MessageObject> {
   try {
-    const { data: { user }, } = await Supabase().auth.getUser();
+    const {
+      data: { user },
+    } = await Supabase().auth.getUser();
 
     const validated = answerSchema.safeParse({
       content: formData.get("content"),
@@ -85,4 +92,128 @@ export async function UnverifyAnswer(id: string): Promise<MessageObject> {
   const { error } = await supabase.rpc("unverify_answer", { ans_id: id });
   if (error) throw new Error(error.message);
   return { message: "answer unverified", ok: true };
+}
+
+export async function getUser(): Promise<User | null> {
+  const supabase = Supabase();
+  const { data } = await supabase.auth.getUser();
+  return data.user;
+}
+
+export async function getQuestion(id: string): Promise<Question> {
+  const sb = Supabase();
+  const { data: question, error } = await sb
+    .from("get_question_full")
+    .select()
+    .eq("id", id)
+    .limit(1)
+    .maybeSingle<Question>();
+
+  if (error || question == null)
+    throw new NotFoundError("Fail to fetch question");
+
+  return question;
+}
+
+export async function getAnswers(id: string): Promise<Answer[]> {
+  const sb = Supabase();
+  const { data: answers, error: ans_err } = await sb
+    .from("get_answer_full")
+    .select()
+    .eq("source_ref", id)
+    .returns<Answer[]>();
+
+  if (ans_err || answers == null)
+    throw new FetchError("Error fetching answers");
+
+  return answers;
+}
+
+export async function getExpertises(ids: string[]): Promise<Expertise[]> {
+  const sb = Supabase();
+  const { data: tags, error: tag_err } = await sb
+    .rpc("get_expertises_set", { uuids: ids })
+    .returns<Expertise[]>();
+
+  //another error handling
+  if (tag_err || tags == null) throw new FetchError(tag_err.message);
+
+  return tags;
+}
+
+export async function getUserData(
+  q_id: string,
+  a_ids: string[],
+): Promise<UserVoteData> {
+  try {
+    const sb = Supabase();
+    const user = await getUser();
+
+    const res: UserVoteData = {
+      answerVotes: [],
+      rootVote: VoteEnum.neutral,
+      reputation: 0,
+    };
+
+    // IMP: if there is no user, return
+    if (user == null) return res;
+
+    // INFO: Fetch data from supabase using reputation system
+    const reputation = await new ReputationService(sb, user).getReputation();
+    const point = reputation?.point ?? 0;
+
+    // INFO: Fetch last vote for question
+    const { data: question_vote, error: question_error } = await sb
+      .from("get_vote_ques_post")
+      .select("direction")
+      .eq("source_ref", q_id)
+      .eq("sender", user.id)
+      .eq("thread_ref", q_id)
+      .limit(1)
+      .returns<{ direction: VoteEnum }[]>();
+
+    if (question_error || !question_vote)
+      throw new FetchError("Failed to fetch votes");
+
+    const hasPreviousVote = question_vote != null && question_vote.length > 0;
+    const root_vote = hasPreviousVote
+      ? question_vote[0].direction
+      : VoteEnum.neutral;
+
+    // IMP: if there is no previous answer vote, return
+    if (a_ids.length == 0) {
+      return { ...res, rootVote: root_vote, reputation: point };
+    }
+
+    const { data: vote_ans, error: vote_ans_err } = await sb
+      .from("get_vote_answer")
+      .select("thread_ref, user_status")
+      .eq("source_ref", q_id)
+      .eq("sender", user.id)
+      .in("thread_ref", a_ids)
+      .returns<{ thread_ref: string; user_status: VoteEnum }[]>();
+
+    if (vote_ans_err || !vote_ans)
+      throw new FetchError("Failed to fetch votes");
+
+    const prev_answer_vote = calculateVotes_remade(vote_ans, a_ids);
+
+    return {
+      reputation: point,
+      answerVotes: prev_answer_vote,
+      rootVote: root_vote,
+    };
+  } catch (err: any) {
+    throw err;
+  }
+}
+
+interface AnswerVoteData {
+  thread_ref: string;
+  direction: VoteEnum;
+}
+interface UserVoteData {
+  answerVotes: AnswerVoteData[];
+  rootVote: VoteEnum;
+  reputation: number;
 }

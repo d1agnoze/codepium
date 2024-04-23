@@ -1,29 +1,24 @@
 import Browse from "@/components/question/Browse";
 import { DEFAULT_SITE } from "@/defaults/site";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
-import { notFound } from "next/navigation";
+import { Supabase } from "@/utils/supabase/serverCom";
 
-export default async function Page({
-  searchParams: search,
-}: {
-  searchParams: { filter?: string };
-}) {
-  const url_base = DEFAULT_SITE;
+export default async function Page({ searchParams: search }: Props) {
   let filter;
+
   if (search.filter != null || search.filter === "") {
-    const supabase = createServerComponentClient({ cookies: () => cookies() });
-    const { data, error } = await supabase
+    const sb = Supabase();
+
+    const { data, error } = await sb
       .from("Expertise")
       .select()
       .eq("id", search.filter)
       .single<Expertise>();
-    if (error || data == null) {
-      console.error(error);
-      notFound();
-    }
+
+    if (error || data == null) throw new Error("Invalid filter");
+
     filter = data;
   }
+
   return (
     <div className="w-full flex flex-col px-8 mt-3 mb-10 gap-3">
       <div className="w-full mb-5">
@@ -32,8 +27,12 @@ export default async function Page({
       </div>
       {/* QUESTIONS */}
       <div>
-        <Browse url_base={url_base} pre_sel_exp={filter} />
+        <Browse url_base={DEFAULT_SITE} pre_sel_exp={filter} />
       </div>
     </div>
   );
+}
+
+interface Props {
+  searchParams: { filter?: string };
 }
