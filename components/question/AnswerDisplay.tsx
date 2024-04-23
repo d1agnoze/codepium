@@ -12,11 +12,11 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "./tooltip";
+} from "@/components/ui/tooltip";
 import CommentComponent from "../CommentComponent";
 import { VoteEnum } from "@/enums/vote.enum";
 import UserAction from "../edit/UserActionComponent";
-import { Badge } from "./badge";
+import { Badge } from "@/components/ui/badge";
 import {
   UnverifyAnswer,
   VerifyAnswer,
@@ -31,7 +31,7 @@ import { createClientComponentClient as InitClient } from "@supabase/auth-helper
 export default function AnswerDisplay({
   ans,
   current_user_id,
-  user_prev_vote,
+  vote,
   rep,
 }: Props) {
   const fromUser = useRef(ans.user_id === current_user_id);
@@ -86,18 +86,11 @@ export default function AnswerDisplay({
           </TooltipProvider>
         )}
         <VotingComponent
-          current_direction={
-            user_prev_vote.filter((x) => x.thread_ref === ans.thread_ref)[0]
-              .direction
-          }
+          current_direction={vote}
           fromUser={fromUser.current}
           mode={VoteMode.answer}
           thread_id={ans.thread_ref}
-          current_stars={
-            ans.stars -
-            user_prev_vote.filter((x) => x.thread_ref === ans.thread_ref)[0]
-              .direction
-          }
+          current_stars={ans.stars - vote}
           user_id={current_user_id}
           source_id={ans.source_ref}
         />
@@ -170,6 +163,6 @@ export default function AnswerDisplay({
 interface Props {
   ans: Answer;
   current_user_id: string;
-  user_prev_vote: { thread_ref: string; direction: VoteEnum }[];
+  vote: VoteEnum;
   rep: number;
 }

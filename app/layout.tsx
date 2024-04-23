@@ -6,7 +6,7 @@ import DrawerHost from "@/components/navigation-bar";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import AuthButton from "@/components/AuthButton";
-import { Flip, ToastContainer } from "react-toastify";
+import { Flip, ToastContainer, ToastContainerProps } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingProvider from "@/components/Loading";
 import Link from "next/link";
@@ -71,22 +71,16 @@ export default function RootLayout({
           </main>
           <footer className="footer footer-center p-10 bg-hslvar text-base-content rounded">
             <nav className="grid grid-flow-col gap-4">
-              <a className="link link-hover">About us</a>
               <a className="link link-hover">Contact</a>
-              <a className="link link-hover">Jobs</a>
-              <a className="link link-hover">Press kit</a>
+              <a className="link link-hover" href="/guide">
+                Guideline
+              </a>
             </nav>
             <nav>
               <div className="grid grid-flow-col gap-4">
-                <a>
-                  <Facebook size={30} />
-                </a>
-                <a>
-                  <Linkedin size={30} />
-                </a>
-                <a>
-                  <Github size={30} />
-                </a>
+                <Facebook size={30} />
+                <Linkedin size={30} />
+                <Github size={30} />
               </div>
             </nav>
             <aside>
@@ -100,21 +94,23 @@ export default function RootLayout({
             <NavigationEvents />
           </Suspense>
 
-          <ToastContainer
-            position="bottom-left"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable={false}
-            transition={Flip}
-            pauseOnHover
-            theme={"dark"}
-          />
+          <ToastContainer {...toastOption} />
         </ThemeProvider>
       </body>
     </html>
   );
 }
+
+const toastOption: ToastContainerProps = {
+  position: "bottom-left",
+  autoClose: 3000,
+  hideProgressBar: false,
+  newestOnTop: false,
+  closeOnClick: true,
+  rtl: false,
+  pauseOnFocusLoss: true,
+  draggable: false,
+  transition: Flip,
+  pauseOnHover: true,
+  theme: "dark",
+};

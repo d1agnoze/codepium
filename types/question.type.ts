@@ -9,7 +9,7 @@ export type Question = {
   stars: number;
   status: boolean;
 
-  user_id?: string;
+  user_id: string;
   user_name?: string;
   email?: string;
 

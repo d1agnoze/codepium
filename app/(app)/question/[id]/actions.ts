@@ -16,6 +16,7 @@ import { FetchError } from "@/helpers/error/FetchError";
 import { Answer } from "@/types/answer.type";
 import { VoteEnum } from "@/enums/vote.enum";
 import { calculateVotes_remade } from "@/utils/vote.utils";
+import { getUser as fetchUser } from "@/utils/supabase/user";
 
 export async function AnswerQuestion(
   _: any,
@@ -141,79 +142,82 @@ export async function getExpertises(ids: string[]): Promise<Expertise[]> {
   return tags;
 }
 
-export async function getUserData(
-  q_id: string,
-  a_ids: string[],
-): Promise<UserVoteData> {
+export async function getQuestionVote(id: string): Promise<VoteEnum> {
   try {
     const sb = Supabase();
     const user = await getUser();
 
-    const res: UserVoteData = {
-      answerVotes: [],
-      rootVote: VoteEnum.neutral,
-      reputation: 0,
-    };
+    if (user == null) return VoteEnum.neutral;
 
-    // IMP: if there is no user, return
-    if (user == null) return res;
-
-    // INFO: Fetch data from supabase using reputation system
-    const reputation = await new ReputationService(sb, user).getReputation();
-    const point = reputation?.point ?? 0;
-
-    // INFO: Fetch last vote for question
-    const { data: question_vote, error: question_error } = await sb
+    const { data, error } = await sb
       .from("get_vote_ques_post")
-      .select("direction")
-      .eq("source_ref", q_id)
+      .select("user_status")
+      .eq("source_ref", id)
       .eq("sender", user.id)
-      .eq("thread_ref", q_id)
+      .eq("thread_ref", id)
       .limit(1)
-      .returns<{ direction: VoteEnum }[]>();
+      .returns<{ user_status: VoteEnum }[]>();
 
-    if (question_error || !question_vote)
-      throw new FetchError("Failed to fetch votes");
+    if (error || !data) throw new FetchError("Failed to fetch votes");
 
-    const hasPreviousVote = question_vote != null && question_vote.length > 0;
-    const root_vote = hasPreviousVote
-      ? question_vote[0].direction
-      : VoteEnum.neutral;
+    const hasPreviousVote = data.length > 0;
 
-    // IMP: if there is no previous answer vote, return
-    if (a_ids.length == 0) {
-      return { ...res, rootVote: root_vote, reputation: point };
-    }
+    const root_vote = hasPreviousVote ? data[0].user_status : VoteEnum.neutral;
 
-    const { data: vote_ans, error: vote_ans_err } = await sb
-      .from("get_vote_answer")
-      .select("thread_ref, user_status")
-      .eq("source_ref", q_id)
-      .eq("sender", user.id)
-      .in("thread_ref", a_ids)
-      .returns<{ thread_ref: string; user_status: VoteEnum }[]>();
-
-    if (vote_ans_err || !vote_ans)
-      throw new FetchError("Failed to fetch votes");
-
-    const prev_answer_vote = calculateVotes_remade(vote_ans, a_ids);
-
-    return {
-      reputation: point,
-      answerVotes: prev_answer_vote,
-      rootVote: root_vote,
-    };
+    return root_vote;
   } catch (err: any) {
     throw err;
   }
 }
 
-interface AnswerVoteData {
-  thread_ref: string;
-  direction: VoteEnum;
+export async function getReputation(): Promise<number> {
+  try {
+    const sb = Supabase();
+    const user = await getUser();
+    if (user == null) return 0;
+    const reputation = await new ReputationService(sb, user).getReputation();
+    const point = reputation?.point ?? 0;
+    return point;
+  } catch (err: any) {
+    throw err;
+  }
 }
-interface UserVoteData {
-  answerVotes: AnswerVoteData[];
-  rootVote: VoteEnum;
-  reputation: number;
+
+export async function getAnswerVotes(q_id: string, a_ids: string[]) {
+  try {
+    const sb = Supabase();
+    const user = await fetchUser(sb);
+    let input;
+    if (user == null) {
+      input = a_ids.map((x) => ({
+        thread_ref: x,
+        user_status: VoteEnum.neutral,
+      }));
+    } else {
+      const { data, error } = await sb
+        .from("get_vote_answer")
+        .select("thread_ref, user_status")
+        .eq("source_ref", q_id)
+        .eq("sender", user.id)
+        .in("thread_ref", a_ids)
+        .returns<{ thread_ref: string; user_status: VoteEnum }[]>();
+
+      if (error || !data) throw new FetchError("Failed to fetch votes");
+
+      input = data;
+    }
+
+    const res = calculateVotes_remade(input, a_ids);
+
+    const voteMap = new Map(
+      a_ids.map((id) => [
+        id,
+        res.find((x) => x.thread_ref === id)?.direction ?? VoteEnum.neutral,
+      ]),
+    );
+
+    return voteMap;
+  } catch (err: any) {
+    throw err;
+  }
 }
