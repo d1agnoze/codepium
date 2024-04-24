@@ -63,17 +63,18 @@ const Browse = ({
     }
 
     fetchUrl();
-    return () => abort.abort();
+    return () => abort.abort("abort fetch");
   }, [currPage]);
 
   useEffect(() => {
     const search = url.current.searchParams;
     clearParams(search);
-    if (settings.search && settings.search !== "") {
+
+    if (settings.search !== "") {
       search.set("search", settings.search);
     }
 
-    if (settings.tag && settings.tag.length > 0) {
+    if (settings.tag.length > 0) {
       search.set("tag", settings.tag.map((x) => x.id).join(","));
     }
 
@@ -81,6 +82,7 @@ const Browse = ({
       const def_from_date =
         settings.date.from?.toJSON() ?? new Date("1900-1-1").toJSON();
       const def_to_date = settings.date.to?.toJSON() ?? new Date().toJSON();
+
       search.set("from", def_from_date);
       search.set("to", def_to_date);
     }
@@ -92,19 +94,21 @@ const Browse = ({
     setSettings(a);
   };
 
+  useEffect(() => {
+    console.log(loading);
+  }, [loading]);
+
   return (
     <div className="w-full">
       <Filter values={filterHandler} pre_sel_exp={pre_sel_exp} />
       <Separator className="mt-5 mb-3" />
       <div className="flex flex-col gap-3">
         {!loading && data.data.length === 0 && <p>No data found</p>}
-        {loading &&
-          Array.from({ length: PAGINATION_SETTINGS.limit }, () => (
-            <Skeleton className="px-3 py-4 bg-hslvar rounded-md w-full h-[150px]" />
-          ))}
-        {data.data.map((item) => (
-          <Question key={item.id} question={item} />
-        ))}
+        {loading
+          ? Array.from({ length: PAGINATION_SETTINGS.limit }, () => (
+              <Skeleton className="px-3 py-4 bg-hslvar rounded-md w-full h-[150px]" />
+            ))
+          : data.data.map((item) => <Question key={item.id} question={item} />)}
       </div>
       <Separator className="mt-5 mb-3" />
       <Pagin

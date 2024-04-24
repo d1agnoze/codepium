@@ -16,7 +16,6 @@ import { FetchError } from "@/helpers/error/FetchError";
 import { Answer } from "@/types/answer.type";
 import { VoteEnum } from "@/enums/vote.enum";
 import { calculateVotes_remade } from "@/utils/vote.utils";
-import { getUser as fetchUser } from "@/utils/supabase/user";
 
 export async function AnswerQuestion(
   _: any,
@@ -186,7 +185,7 @@ export async function getReputation(): Promise<number> {
 export async function getAnswerVotes(q_id: string, a_ids: string[]) {
   try {
     const sb = Supabase();
-    const user = await fetchUser(sb);
+    const user = await getUser();
     let input;
     if (user == null) {
       input = a_ids.map((x) => ({

@@ -1,3 +1,5 @@
+import { PAGINATION_SETTINGS } from "@/defaults/browsing_paginatioin";
+
 export function paginationCalulator(num: number, bound: number): number[] {
   if (num <= 0 || bound <= 0 || num > bound) return [];
 
@@ -11,3 +13,11 @@ export function paginationCalulator(num: number, bound: number): number[] {
 
   return result;
 }
+
+export const getPagination = (page: number, size: number) => {
+  const limit = size ? size : PAGINATION_SETTINGS.limit;
+  const from = page ? (page - 1) * limit : PAGINATION_SETTINGS.page;
+  const to = page ? from + size - 1 : size - 1;
+
+  return { from, to };
+};
