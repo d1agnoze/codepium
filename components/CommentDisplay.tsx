@@ -133,7 +133,7 @@ export default function CommentsDisplay(
       },
     ).finally(() => setIsLoading(false));
 
-    return () => abort.abort();
+    return () => abort.abort("React rerender");
   }, [curr_page]);
 
   const transitionAnimation = useTransition(new_cmt, {
@@ -149,12 +149,6 @@ export default function CommentsDisplay(
         !isPost ? "items-end" : "items-start"
       }`}
     >
-      <div
-        className={`divider w-full pb-0 mb-0 mt-1" + ${
-          displayComment.total > 0 ? "" : "hidden"
-        }`}
-      >
-      </div>
       {new_cmt.length > 0 &&
         transitionAnimation((style, item) => (
           <animated.div style={style}>
