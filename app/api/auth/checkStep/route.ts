@@ -16,8 +16,6 @@ export async function GET() {
             res = { step: data, message: "User's expertise not initialized" }
         case Step.completed:
             res = { step: data, message: "User's profile has already been initialized" }
-        case Step.no_metadata:
-            res = { step: data, message: "User's profile is missing metadata" }
     }
     return Response.json(res)
 }

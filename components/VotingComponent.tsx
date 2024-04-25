@@ -28,17 +28,22 @@ export default function VotingComponent({
   current_direction,
 }: VotingProps) {
   const [vote, setVote] = useState<VoteEnum>(current_direction);
-
   const [star, setStar] = useState<number>(current_stars);
+  const [rootStar, _] = useState<number>(current_stars - current_direction);
+  const [init, setInit] = useState<boolean>(true);
 
   const upStyle = vote === VoteEnum.up ? voteUpStyle : neutralStyle;
   const downStyle = vote === VoteEnum.down ? votedownstyle : neutralStyle;
   const buttonDisabled = fromUser || !user_id;
 
   useEffect(() => {
+    if (init) {
+      setInit(false);
+      return;
+    }
     if (vote === VoteEnum.up) setStar(current_stars + 1);
     if (vote === VoteEnum.down) setStar(current_stars - 1);
-    if (vote === VoteEnum.neutral) setStar(current_stars);
+    if (vote === VoteEnum.neutral) setStar(rootStar);
   }, [vote]);
 
   /**
@@ -50,22 +55,26 @@ export default function VotingComponent({
     //vote data to reflect on UI
     const newVote = () => {
       if (vote === VoteEnum.up && direction === "up") return VoteEnum.neutral;
-      if (vote === VoteEnum.down && direction === "down") {
+      if (vote === VoteEnum.up && direction === "down") return VoteEnum.neutral;
+
+      if (vote === VoteEnum.down && direction === "up") return VoteEnum.neutral;
+      if (vote === VoteEnum.down && direction === "down")
         return VoteEnum.neutral;
-      }
+
       return new_dir ? VoteEnum.up : VoteEnum.down;
     };
 
     //vote data to reflect on server
     const newImpact = () => {
       if (vote === VoteEnum.up && direction === "up") return VoteEnum.down;
+      if (vote === VoteEnum.up && direction === "down") return VoteEnum.down;
       if (vote === VoteEnum.down && direction === "down") return VoteEnum.up;
+      if (vote === VoteEnum.down && direction === "up") return VoteEnum.up;
       return new_dir ? VoteEnum.up : VoteEnum.down;
     };
 
     if (!fromUser) {
       setVote(newVote());
-
       await VoteHandler(new_dir, newImpact(), newVote());
     }
   };

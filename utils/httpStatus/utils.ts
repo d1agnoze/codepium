@@ -1,5 +1,3 @@
-import { fail } from "assert";
-
 export const BadRequest = (obj?: Object) => {
   const res = obj
     ? obj

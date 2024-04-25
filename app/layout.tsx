@@ -71,7 +71,7 @@ export default function RootLayout({
           </main>
           <footer className="footer footer-center p-10 bg-hslvar text-base-content rounded">
             <nav className="grid grid-flow-col gap-4">
-              <a className="link link-hover">Contact</a>
+              <a className="link link-hover" href="https://github.com/d1agnoze">Contact</a>
               <a className="link link-hover" href="/guide">
                 Guideline
               </a>

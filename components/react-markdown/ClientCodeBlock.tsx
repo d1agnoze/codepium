@@ -1,20 +1,8 @@
 "use client";
 
-import Prism from "prismjs";
 import { useEffect } from "react";
 
-const CodeBlock = ({
-  lang,
-  children,
-  rest,
-}: {
-  lang: string;
-  children: any;
-  rest: any;
-}) => {
-  useEffect(() => {
-    Prism.highlightAll();
-  });
+const CodeBlock = ({ lang, children }: Props) => {
   return (
     <div className="Code">
       <pre>
@@ -24,3 +12,9 @@ const CodeBlock = ({
   );
 };
 export default CodeBlock;
+
+interface Props {
+  lang: string;
+  children: any;
+  rest: any;
+}

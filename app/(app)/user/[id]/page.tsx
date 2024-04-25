@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { User } from "@/types/user.type";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { PencilLine } from "lucide-react";
-import { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 

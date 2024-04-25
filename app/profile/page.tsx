@@ -1,9 +1,11 @@
 "use server";
 
 import Personalization from "@/components/dialogs/change-user-images.dialog";
+import BadgeList from "@/components/question/BadgeList";
 import ProfileShowCase from "@/components/server/profile/ProfileShowcase";
 import Statistic from "@/components/server/profile/Statistic";
 import StopLoading from "@/components/stoploading";
+import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { get_user_seo } from "@/types/get_user_seo.dto";
 import { Supabase } from "@/utils/supabase/serverCom";
@@ -36,6 +38,15 @@ export default async function Page() {
       email: user.email,
     };
 
+    const { data, error: seo_error } = await supabase
+      .from("ExpertiseTracker")
+      .select(`Expertise(id, display_name)`)
+      .eq("user_id", user.id)
+      .returns<{ Expertise: Expertise }[]>();
+    if (seo_error) throw new Error(seo_error.message);
+    console.log(data);
+    const expertises = data.map((e) => e.Expertise);
+
     return (
       <div className="flex flex-col justify-center box-border px-2 relative">
         <ProfileShowCase {...profile_prop} />
@@ -43,7 +54,7 @@ export default async function Page() {
         <div className="absolute top-1 right-3">
           <Personalization user={user} />
         </div>
-        <div className="container">
+        <div className="container mb-10">
           <div className="w-full flex flex-col gap-2 bg-hslvar rounded-md px-5 py-3 mb-3">
             <div className="flex gap-1">
               <PencilLine />
@@ -58,6 +69,11 @@ export default async function Page() {
               Statistic records not found
             </div>
           )}
+          <div className="w-full my-5">
+            <h1 className="text-2xl font-bold my-3">🎓Expertises:</h1>
+            <Separator className="my-2" />
+            <BadgeList tags={expertises} />
+          </div>
         </div>
       </div>
     );
