@@ -16,15 +16,18 @@ import { FetchError } from "@/helpers/error/FetchError";
 import { Answer } from "@/types/answer.type";
 import { VoteEnum } from "@/enums/vote.enum";
 import { calculateVotes_remade } from "@/utils/vote.utils";
+import { getUser as fetchUser } from "@/utils/supabase/user";
+import { formatZodError } from "@/utils/zodErrorHandler";
+import { InternalServerError } from "@/helpers/error/ServerError";
+import { ResourceDeletedError } from "@/helpers/error/ResourceDeletedError";
 
 export async function AnswerQuestion(
   _: any,
   formData: FormData,
 ): Promise<MessageObject> {
   try {
-    const {
-      data: { user },
-    } = await Supabase().auth.getUser();
+    const sb = Supabase();
+    const user = await fetchUser(sb);
 
     const validated = answerSchema.safeParse({
       content: formData.get("content"),
@@ -35,26 +38,27 @@ export async function AnswerQuestion(
       thread_id: formData.get("thread_id"),
     });
 
-    if (!validated.success) throw new ValidationError(validated.error.message);
+    if (!validated.success)
+      throw new ValidationError(formatZodError(validated.error));
 
     if (validated.data.user_id !== user?.id)
       throw new AuthError("User id does not match");
 
-    const { data: question, error } = await Supabase()
-      .from("questions")
+    const { data: question, error } = await sb
+      .from("Question")
       .select()
       .eq("id", validated.data.thread_id)
       .single<Question>();
 
     if (question == null || error)
-      throw new Error("Bad request: Question not found");
+      throw new InternalServerError("Bad request: Question not found");
+
     if (question.isArchieved)
-      throw new Error(
-        "Question is archieved due to:" + question.archieveReason,
-      );
+      throw new Error("Question archieved: " + question.archieveReason);
 
     // INFO: Fetch data from supabse using reputation system
     const rep = new ReputationService(Supabase(), user);
+
     const { data: ans_id } = await rep.doAction("verified_answer", async () => {
       const res: PostgrestSingleResponse<string> = await Supabase().rpc(
         "insert_answer",
@@ -67,16 +71,19 @@ export async function AnswerQuestion(
       if (res.error) throw new SupabaseError(res.error.message);
       return res;
     });
+
     return { message: ans_id, ok: true };
   } catch (err: any) {
-    if (err instanceof SupabaseError)
-      return { message: err.message, ok: false };
-    if (err instanceof ValidationError)
-      return { message: err.message, ok: false };
-    if (err instanceof AuthError) return { message: err.message, ok: false };
-    if (err instanceof ReputationError)
-      return { message: err.message, ok: false };
-    return { message: err.message, ok: false };
+    const res = { message: err.message, ok: false };
+
+    if (err instanceof SupabaseError) return res;
+    if (err instanceof ValidationError) return res;
+    if (err instanceof AuthError) return res;
+    if (err instanceof ReputationError) return res;
+    if (err instanceof InternalServerError) return res;
+    if (err instanceof ResourceDeletedError) return res;
+
+    return { message: "500:Something went wrong", ok: false };
   }
 }
 

@@ -1,7 +1,6 @@
 "use client";
 
-import { createTicket, updateTicket } from "@/app/profile/ticket/actions";
-import { ticket_schema } from "@/schemas/ticket.schema";
+import { updateTicket } from "@/app/profile/ticket/actions";
 import { INITIAL_MESSAGE_OBJECT } from "@/types/message.route";
 import { stateHandler } from "@/utils/handleMessageObj";
 import { zodResolver } from "@hookform/resolvers/zod";

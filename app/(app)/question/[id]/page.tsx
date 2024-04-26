@@ -90,7 +90,10 @@ export default async function Page({ params }: { params: { id: string } }) {
           </div>
         </div>
 
-        <AnswerButton point={reputation} user={user} question={question} />
+        {user != null && (
+          <AnswerButton point={reputation} user={user} question={question} />
+        )}
+
         <div>{answers?.length === 0 && <NoAnswerComponent />}</div>
 
         <div className="flex flex-col gap-3">

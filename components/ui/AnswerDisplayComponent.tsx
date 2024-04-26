@@ -28,6 +28,9 @@ import AdminAction from "../edit/AdminActionComponent";
 import { INITIAL_MESSAGE_OBJECT } from "@/types/message.route";
 import { createClientComponentClient as InitClient } from "@supabase/auth-helpers-nextjs";
 
+/**
+ * @deprecated this component is not suitable for editing and will be removed soon
+ * */
 export default function AnswerDisplay({
   ans,
   current_user_id,
@@ -35,6 +38,9 @@ export default function AnswerDisplay({
   rep,
 }: Props) {
   const fromUser = useRef(ans.user_id === current_user_id);
+
+  const hasRightToVerity = ans.source_user_id === current_user_id;
+
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   useEffect(() => {
@@ -119,7 +125,7 @@ export default function AnswerDisplay({
             </span>
           </p>
           {ans.isEdited && <p className="text-xs text-gray-400">(Edited)</p>}
-          {!ans.status && fromUser.current && (
+          {!ans.status && !hasRightToVerity && (
             <Badge
               className="text-xs hover:bg-accent cursor-pointer"
               onClick={() => vertify(ans.thread_ref, "verify")}
@@ -127,7 +133,7 @@ export default function AnswerDisplay({
               Mark as best answer
             </Badge>
           )}
-          {ans.status && fromUser.current && (
+          {ans.status && !hasRightToVerity && (
             <Badge
               className="text-xs bg-accent hover:bg-primary cursor-pointer"
               onClick={() => vertify(ans.thread_ref, "unverify")}

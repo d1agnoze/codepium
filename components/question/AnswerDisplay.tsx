@@ -3,7 +3,6 @@
 import { Answer } from "@/types/answer.type";
 import { BadgeCheck } from "lucide-react";
 import moment from "moment";
-import Markdown from "react-markdown";
 import { VoteMode } from "@/enums/vote-mode.enum";
 import VotingComponent from "../VotingComponent";
 import { useEffect, useRef, useState } from "react";
@@ -27,6 +26,8 @@ import Profile from "../general/Avatar";
 import AdminAction from "../edit/AdminActionComponent";
 import { INITIAL_MESSAGE_OBJECT } from "@/types/message.route";
 import { createClientComponentClient as InitClient } from "@supabase/auth-helpers-nextjs";
+import MDRenderer from "../react-markdown/Markdown";
+import { useRouter } from "next/navigation";
 
 export default function AnswerDisplay({
   ans,
@@ -35,7 +36,9 @@ export default function AnswerDisplay({
   rep,
 }: Props) {
   const fromUser = useRef(ans.user_id === current_user_id);
+  const hasRightToVerify = ans.source_user_id === current_user_id;
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const router = useRouter()
 
   useEffect(() => {
     fetchAuthorization(current_user_id);
@@ -62,7 +65,9 @@ export default function AnswerDisplay({
       if (verifyMode === "unverify") {
         res = await UnverifyAnswer(id);
       }
+      if (!res.ok) throw new Error(res.message);
       toast.success(res.message);
+      router.refresh()
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -112,7 +117,7 @@ export default function AnswerDisplay({
             </span>
           </p>
           {ans.isEdited && <p className="text-xs text-gray-400">(Edited)</p>}
-          {!ans.status && fromUser.current && (
+          {!ans.status && hasRightToVerify && (
             <Badge
               className="text-xs hover:bg-accent cursor-pointer"
               onClick={() => vertify(ans.thread_ref, "verify")}
@@ -120,7 +125,7 @@ export default function AnswerDisplay({
               Mark as best answer
             </Badge>
           )}
-          {ans.status && fromUser.current && (
+          {ans.status && hasRightToVerify && (
             <Badge
               className="text-xs bg-accent hover:bg-primary cursor-pointer"
               onClick={() => vertify(ans.thread_ref, "unverify")}
@@ -143,7 +148,12 @@ export default function AnswerDisplay({
           )}
         </div>
         <div className="pt-3 flex-grow">
-          <Markdown>{ans.content}</Markdown>
+          <main className="mt-1">
+            <MDRenderer
+              className={"text-md leading-relaxed"}
+              content={ans.content}
+            />
+          </main>
         </div>
         <div>
           <CommentComponent

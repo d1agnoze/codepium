@@ -38,13 +38,12 @@ export default async function Page() {
       email: user.email,
     };
 
-    const { data, error: seo_error } = await supabase
+    const { data, error: expertise_error } = await supabase
       .from("ExpertiseTracker")
       .select(`Expertise(id, display_name)`)
       .eq("user_id", user.id)
       .returns<{ Expertise: Expertise }[]>();
-    if (seo_error) throw new Error(seo_error.message);
-    console.log(data);
+    if (expertise_error) throw new Error(expertise_error.message);
     const expertises = data.map((e) => e.Expertise);
 
     return (

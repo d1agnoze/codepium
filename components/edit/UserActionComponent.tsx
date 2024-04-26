@@ -35,6 +35,7 @@ import { Input } from "../ui/input";
 import { SubmitButton } from "../SubmitButton";
 import { useState } from "react";
 import { Label } from "../ui/label";
+import { ForwardRefEditor } from "../md-editor/ForwardRefAnswerEditor";
 
 const UserAction = (prop: Prop) => {
   const router = useRouter();
@@ -87,6 +88,7 @@ const UserAction = (prop: Prop) => {
    * @returns void
    */
   const submitEdit = async (payload: FormData) => {
+    if (prop.mode === "answer") payload.append("content", edit_content ?? "");
     payload.append("id", prop.id);
     payload.append("mode", prop.mode);
 
@@ -166,16 +168,15 @@ const UserAction = (prop: Prop) => {
                         <p className="ml-3">Edit</p>
                       </div>
                     </TooltipTrigger>
-                    {prop.allowEdit?.message &&
-                      (
-                        <TooltipContent
-                          side="bottom"
-                          sideOffset={10}
-                          className="bg-accent text-secondary"
-                        >
-                          <p>{prop.allowEdit?.message}</p>
-                        </TooltipContent>
-                      )}
+                    {prop.allowEdit?.message && (
+                      <TooltipContent
+                        side="bottom"
+                        sideOffset={10}
+                        className="bg-accent text-secondary"
+                      >
+                        <p>{prop.allowEdit?.message}</p>
+                      </TooltipContent>
+                    )}
                   </Tooltip>
                 </TooltipProvider>
               </DialogTrigger>
@@ -183,41 +184,45 @@ const UserAction = (prop: Prop) => {
                 <DialogHeader>
                   <DialogTitle>Edit Thread</DialogTitle>
                   <DialogDescription>
-                    {prop.prevContent
-                      ? (
-                        <div className="flex flex-col gap-2">
-                          <p>
-                            This action cannot be undone. You will not get
-                            reputation for updating content of this thread
-                          </p>
-                          <form action={submitEdit}>
+                    {prop.prevContent ? (
+                      <div className="flex flex-col gap-2">
+                        <p>
+                          You will not get reputation for updating content of
+                          this thread
+                        </p>
+                        <form action={submitEdit}>
+                          {prop.mode === "answer" ? (
+                            <ForwardRefEditor
+                              onChange={(e) => set_edit_content(e)}
+                              markdown={prop.prevContent}
+                            />
+                          ) : (
                             <Input
                               type="text"
                               name="content"
-                              value={edit_content}
+                              defaultValue={edit_content ? edit_content : ""}
+                              onKeyDown={(e) => e.stopPropagation()}
                               onChange={(e) => set_edit_content(e.target.value)}
                             />
-                            <SubmitButton className="mt-3" />
-                          </form>
-                        </div>
-                      )
-                      : <p>Navigate to edit page?</p>}
+                          )}
+                          <SubmitButton className="mt-3" />
+                        </form>
+                      </div>
+                    ) : (
+                      <p>Navigate to edit page?</p>
+                    )}
                   </DialogDescription>
                 </DialogHeader>
-                {!prop.prevContent && prop.editSite &&
-                  (
-                    <DialogFooter>
-                      <Button
-                        variant="outline"
-                        onClick={() => redirectHandler()}
-                      >
-                        Yes
-                      </Button>
-                      <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
-                      </DialogClose>
-                    </DialogFooter>
-                  )}
+                {!prop.prevContent && prop.editSite && (
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => redirectHandler()}>
+                      Yes
+                    </Button>
+                    <DialogClose asChild>
+                      <Button variant="outline">Cancel</Button>
+                    </DialogClose>
+                  </DialogFooter>
+                )}
               </DialogContent>
             </Dialog>
           </DropdownMenuItem>
@@ -235,9 +240,11 @@ const UserAction = (prop: Prop) => {
                     open={prop.allowDelete?.allow === false && undefined}
                   >
                     <TooltipTrigger className="w-full flex gap-1">
-                      {prop.mode === "question"
-                        ? <ArchiveX size={20} />
-                        : <Trash2 size={20} />}
+                      {prop.mode === "question" ? (
+                        <ArchiveX size={20} />
+                      ) : (
+                        <Trash2 size={20} />
+                      )}
                       <p className="ml-3">
                         {`${
                           prop.mode === "question" ? "Archieve" : "Delete"

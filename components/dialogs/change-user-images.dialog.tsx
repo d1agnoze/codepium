@@ -55,6 +55,7 @@ const Personalization = ({ user }: { user: get_user_seo }) => {
         const payload = new FormData();
         payload.append("image", img.file, img.file.name);
         await UploadImage(payload);
+        toast.success("Update successfully");
         router.refresh();
         setOpen(false);
       } else {

@@ -18,7 +18,9 @@ import { cookies } from "next/headers";
  */
 export async function EditThread(formData: FormData): Promise<MessageObject> {
   const supabase = createServerActionClient({ cookies: () => cookies() });
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (user == null) throw new Error("Bad request: Invalid identity");
 
@@ -30,11 +32,10 @@ export async function EditThread(formData: FormData): Promise<MessageObject> {
   if (!validate.success) throw new Error(validate.error.message);
 
   // console.log(typeof validate.data.id, validate.data.id);
-  const { error } = await supabase
-    .rpc("update_" + validate.data.mode, {
-      content_text: validate.data.content,
-      search_id: validate.data.id,
-    });
+  const { error } = await supabase.rpc("update_" + validate.data.mode, {
+    content_text: validate.data.content,
+    search_id: validate.data.id,
+  });
   if (error) throw new Error(error.message);
 
   return { message: "thread edited", ok: true };
@@ -47,7 +48,9 @@ export async function EditThread(formData: FormData): Promise<MessageObject> {
  */
 export async function DeleteThread(formData: FormData): Promise<MessageObject> {
   const supabase = createServerActionClient({ cookies: () => cookies() });
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const validate = deleteSchema.safeParse({
     id: formData.get("id"),
@@ -57,31 +60,31 @@ export async function DeleteThread(formData: FormData): Promise<MessageObject> {
   if (!validate.success) throw new Error(validate.error.message);
 
   if (validate.data.mode === "comment") {
-    const { data, error } = await supabase.from("comment")
-      .select().eq("id", validate.data.id)
+    const { data, error } = await supabase
+      .from("Comment")
+      .select()
+      .eq("id", validate.data.id)
       .single<comment>();
 
-    if (error || !data) throw new Error(error.message);
+    if (error || !data) {
+      throw new Error(error.message);
+    }
 
     if (data.user_id !== user?.id) {
       throw new Error("Bad request: Invalid identity");
     }
-
-    if (isAfterEditWins(data.created_at)) {
-      throw new Error("Bad request: Edit windows expired");
-    }
   }
 
   if (validate.data.mode !== "question") {
-    const { error } = await supabase
-      .rpc("delete_" + validate.data.mode, { del_id: validate.data.id });
+    const { error } = await supabase.rpc("delete_" + validate.data.mode, {
+      del_id: validate.data.id,
+    });
     if (error) throw new Error(error.message);
   } else {
-    const { error } = await supabase
-      .rpc("delete_question", {
-        del_id: validate.data.id,
-        reason: validate.data.content,
-      });
+    const { error } = await supabase.rpc("delete_question", {
+      del_id: validate.data.id,
+      reason: validate.data.content,
+    });
     if (error) throw new Error(error.message);
   }
 
@@ -99,7 +102,9 @@ export async function EditThread2(
   formData: FormData,
 ): Promise<MessageObject> {
   const supabase = createServerActionClient({ cookies: () => cookies() });
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (user == null) throw new Error("Bad request: Invalid identity");
 
@@ -128,5 +133,5 @@ export async function EditThread2(
     throw new Error(`Error: ${error.message}`);
   }
 
-  return { message: "success - " + validate.data.id + "deleted", ok: true };
+  return { message: "success", ok: true };
 }
