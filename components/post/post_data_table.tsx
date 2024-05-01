@@ -24,15 +24,15 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { RefreshCcw } from "lucide-react";
-import { post_seo } from "@/types/post.seo";
-import Post from "./PostSEODisplay";
+import { Post } from "@/types/post.type";
+import MyPost from "./MyPost";
 
-interface DataTableProps<TData extends post_seo, TValue = post_seo> {
+interface DataTableProps<TData extends Post, TValue = Post> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   filter_col?: { key: keyof TData; label: string }[];
 }
-export function PostDataTable<TData extends post_seo, TValue = post_seo>({
+export function PostDataTable<TData extends Post, TValue = Post>({
   columns,
   data,
   filter_col,
@@ -130,8 +130,8 @@ export function PostDataTable<TData extends post_seo, TValue = post_seo>({
       </div>
       {table.getRowModel().rows?.length ? (
         table.getRowModel().rows.map((row) => (
-          <div className="my-3">
-            <Post post={row.original} />
+          <div className="my-3" key={row.id}>
+            <MyPost post={row.original} />
           </div>
         ))
       ) : (

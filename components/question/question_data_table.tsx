@@ -29,17 +29,17 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { RefreshCcw } from "lucide-react";
-import { question_seo } from "@/types/question.seo";
-import Question from "./QuestionSEODisplay";
+import MyQuestion from "./MyQuestionComponent";
+import { Question } from "@/types/question.type";
 
-interface DataTableProps<TData extends question_seo, TValue = question_seo> {
+interface DataTableProps<TData extends Question, TValue = Question> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   filter_col?: { key: keyof TData; label: string }[];
 }
 export function QuestionDataTable<
-  TData extends question_seo,
-  TValue = question_seo,
+  TData extends Question,
+  TValue = Question,
 >({ columns, data, filter_col }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -134,8 +134,8 @@ export function QuestionDataTable<
       </div>
       {table.getRowModel().rows?.length ? (
         table.getRowModel().rows.map((row) => (
-          <div className="my-3">
-            <Question question={row.original} />
+          <div className="my-3" key={row.id}>
+            <MyQuestion question={row.original} />
           </div>
         ))
       ) : (

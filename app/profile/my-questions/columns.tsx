@@ -2,9 +2,9 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { question_seo } from "@/types/question.seo";
+import { Question } from "@/types/question.type";
 
-export const columns: ColumnDef<question_seo>[] = [
+export const columns: ColumnDef<Question>[] = [
   {
     accessorKey: "title",
     header: ({}) => <div className="Hidden"></div>,
@@ -25,7 +25,7 @@ export const columns: ColumnDef<question_seo>[] = [
     },
   },
   {
-    accessorKey: "answer_count",
+    accessorKey: "isArchieved",
     header: ({ column }) => {
       return (
         <Button
@@ -33,7 +33,22 @@ export const columns: ColumnDef<question_seo>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="px-2"
         >
-          Answers
+          Is Archived
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+  },
+  {
+    accessorKey: "stars",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="px-2"
+        >
+          Stars
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
