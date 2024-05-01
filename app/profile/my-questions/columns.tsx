@@ -40,7 +40,7 @@ export const columns: ColumnDef<Question>[] = [
     },
   },
   {
-    accessorKey: "stars",
+    accessorKey: "status",
     header: ({ column }) => {
       return (
         <Button
@@ -48,7 +48,7 @@ export const columns: ColumnDef<Question>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="px-2"
         >
-          Stars
+          Status
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
