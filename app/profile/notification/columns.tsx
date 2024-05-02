@@ -10,6 +10,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
 import { toast } from "react-toastify";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -30,7 +36,18 @@ export const columns: ColumnDef<notification>[] = [
       <div className="truncate max-w-[100px]">{row.original.sender}</div>
     ),
   },
-  { accessorKey: "message", header: "Message" },
+  {
+    accessorKey: "message",
+    header: "Message",
+    cell: ({ row }) => (
+      <Popover>
+        <PopoverTrigger>
+          <div className="truncate">{row.original.message}</div>
+        </PopoverTrigger>
+        <PopoverContent>{row.original.message}</PopoverContent>
+      </Popover>
+    ),
+  },
   {
     accessorKey: "created_at",
     header: ({ column }) => (
