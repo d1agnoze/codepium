@@ -27,17 +27,23 @@ export interface SelectedHandler {
   isDefault: boolean;
 }
 
-export default function CommentsDisplay(
-  { thread_ref, parent_ref, mode, handler, source_user_id, user_id, new_cmt }: {
-    thread_ref: string;
-    parent_ref: string;
-    mode: "question" | "post" | "answer";
-    handler: (comment: SelectedHandler) => void;
-    source_user_id: string;
-    user_id: string;
-    new_cmt: comment[];
-  },
-) {
+export default function CommentsDisplay({
+  thread_ref,
+  parent_ref,
+  mode,
+  handler,
+  source_user_id,
+  user_id,
+  new_cmt,
+}: {
+  thread_ref: string;
+  parent_ref: string;
+  mode: "question" | "post" | "answer";
+  handler: (comment: SelectedHandler) => void;
+  source_user_id: string;
+  user_id: string;
+  new_cmt: comment[];
+}) {
   const [selected, setSelected] = useState<SelectedHandler>({
     data: {
       comment_user_name: "",
@@ -61,29 +67,28 @@ export default function CommentsDisplay(
     displayComment.total,
   );
 
-  const url =
-    `/api/general/comments?thread_ref=${thread_ref}&parent_ref=${parent_ref}&mode=${mode}&page=${curr_page}&limit=${6}`;
+  const url = `/api/general/comments?thread_ref=${thread_ref}&parent_ref=${parent_ref}&mode=${mode}&page=${curr_page}&limit=${6}`;
 
   const selectReplyHandler = (cmt: comment) => {
     const isDefault = cmt.id === selected.comment_id || cmt.user_id === user_id;
     setSelected((_) => {
       return isDefault
         ? {
-          data: {
-            comment_user_name: "",
-            comment_user_id: "",
-          },
-          comment_id: "",
-          isDefault: true,
-        }
+            data: {
+              comment_user_name: "",
+              comment_user_id: "",
+            },
+            comment_id: "",
+            isDefault: true,
+          }
         : {
-          data: {
-            comment_user_name: cmt.user_name,
-            comment_user_id: cmt.user_id,
-          },
-          comment_id: cmt.id,
-          isDefault: false,
-        };
+            data: {
+              comment_user_name: cmt.user_name,
+              comment_user_id: cmt.user_id,
+            },
+            comment_id: cmt.id,
+            isDefault: false,
+          };
     });
   };
 
@@ -93,9 +98,7 @@ export default function CommentsDisplay(
 
   useEffect(() => {
     if (!show) {
-      setCmts(
-        displayComment.data.slice(0, 2),
-      );
+      setCmts(displayComment.data.slice(0, 2));
     } else setCmts(displayComment.data);
   }, [show, displayComment]);
 
@@ -112,8 +115,9 @@ export default function CommentsDisplay(
     }
     //Action when switching pages
     setIsLoading(true);
-    fetch(url, { signal: abort.signal }).then((res) => res.json()).then(
-      (data: Pag<comment>) => {
+    fetch(url, { signal: abort.signal })
+      .then((res) => res.json())
+      .then((data: Pag<comment>) => {
         if ((data as any).message != undefined) {
           toast.error("We have a server issue");
           return;
@@ -126,12 +130,12 @@ export default function CommentsDisplay(
         }
         setDisplayComment({
           ...data,
-          data: data.data.filter((cmt) =>
-            !(new_cmt.map((c) => c.id).includes(cmt.id))
+          data: data.data.filter(
+            (cmt) => !new_cmt.map((c) => c.id).includes(cmt.id),
           ),
         });
-      },
-    ).finally(() => setIsLoading(false));
+      })
+      .finally(() => setIsLoading(false));
 
     return () => abort.abort("React rerender");
   }, [curr_page]);
@@ -177,40 +181,39 @@ export default function CommentsDisplay(
                 NEW
               </span>{" "}
               <span className="font-bold">You:</span>
-              {item.reply_to !== source_user_id &&
-                (
-                  <span className="px-0 font-bold">
-                    {`@${item.receiver_name}`}
-                  </span>
-                )}
+              {item.reply_to !== source_user_id && (
+                <span className="px-0 font-bold">
+                  {`@${item.receiver_name}`}
+                </span>
+              )}
               <p>{item.content}</p>
             </div>
           </animated.div>
         ))}
-      {cmts.map((
-        cmt,
-      ) => (
+      {cmts.map((cmt) => (
         <div
           key={cmt.id}
           className={`p-0 my-1 flex flex-nowrap justify-end items-center gap-2 ${
             !isPost ? "text-xs" : "text-sm"
           }`}
         >
-          <UserAction
-            visible={isAfterEditWins(cmt.created_at)}
-            mode={"comment"}
-            id={cmt.id}
-            iconSize={15}
-            allowDelete={{
-              allow: isAfterEditWins(cmt.created_at),
-              message: DEFAULT_COMMENT_EDIT_MSG,
-            }}
-            allowEdit={{
-              allow: isAfterEditWins(cmt.created_at),
-              message: DEFAULT_COMMENT_EDIT_MSG,
-            }}
-            prevContent={cmt.content}
-          />
+          {cmt.user_id === user_id && (
+            <UserAction
+              visible={isAfterEditWins(cmt.created_at)}
+              mode={"comment"}
+              id={cmt.id}
+              iconSize={15}
+              allowDelete={{
+                allow: isAfterEditWins(cmt.created_at),
+                message: DEFAULT_COMMENT_EDIT_MSG,
+              }}
+              allowEdit={{
+                allow: isAfterEditWins(cmt.created_at),
+                message: DEFAULT_COMMENT_EDIT_MSG,
+              }}
+              prevContent={cmt.content}
+            />
+          )}
           {cmt.isEdited && <span className="text-gray-500">(Edited)</span>}
           <span
             className="p-1 cursor-pointer bg-gray-700 rounded-md hover:scale-105 transition-all text-white"
@@ -218,93 +221,82 @@ export default function CommentsDisplay(
           >
             {cmt.user_name}
           </span>
-          {cmt.mode === "comment" &&
-            (
-              <span className="px-0 font-bold underline">
-                {`@${cmt.receiver_name}`}
-              </span>
-            )}
-          <span>
-            {cmt.content}
-          </span>
+          {cmt.mode === "comment" && (
+            <span className="px-0 font-bold underline">
+              {`@${cmt.receiver_name}`}
+            </span>
+          )}
+          <span>{cmt.content}</span>
           {selected.comment_id === cmt.id &&
-            selected.data.comment_user_id !== user_id &&
-            (
+            selected.data.comment_user_id !== user_id && (
               <div onClick={() => selectReplyHandler(cmt)}>
                 <MessageCircleX size={16} color="hsl(var(--accent))" />
               </div>
             )}
         </div>
       ))}
-      {show && displayComment.total > 0 &&
-        (
-          <div className="w-full flex float-right mt-3">
-            <Pagination className="justify-end md:scale-90 md:translate-x-10">
-              <PaginationContent>
-                {pagination_list.at(0) !== 1 &&
-                  (
-                    <PaginationItem>
-                      <PaginationPrevious
-                        href="#"
-                        size={"sm"}
-                        onClick={() => setCurr_page(curr_page - 1)}
-                      />
-                    </PaginationItem>
-                  )}
-                {pagination_list
-                  .map((i) => (
-                    <PaginationItem key={Math.random()}>
-                      <PaginationLink
-                        href="#"
-                        size={"sm"}
-                        onClick={() => setCurr_page(i)}
-                        isActive={i === curr_page}
-                      >
-                        {i}
-                      </PaginationLink>
-                    </PaginationItem>
-                  ))}
-                {pagination_list.at(pagination_list.length - 1) !==
-                    displayComment.total &&
-                  (
-                    <PaginationItem>
-                      <PaginationNext
-                        href="#"
-                        size={"sm"}
-                        onClick={() => setCurr_page(curr_page + 1)}
-                      />
-                    </PaginationItem>
-                  )}
-              </PaginationContent>
-            </Pagination>
-          </div>
-        )}
+      {show && displayComment.total > 0 && (
+        <div className="w-full flex float-right mt-3">
+          <Pagination className="justify-end md:scale-90 md:translate-x-10">
+            <PaginationContent>
+              {pagination_list.at(0) !== 1 && (
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    size={"sm"}
+                    onClick={() => setCurr_page(curr_page - 1)}
+                  />
+                </PaginationItem>
+              )}
+              {pagination_list.map((i) => (
+                <PaginationItem key={Math.random()}>
+                  <PaginationLink
+                    href="#"
+                    size={"sm"}
+                    onClick={() => setCurr_page(i)}
+                    isActive={i === curr_page}
+                  >
+                    {i}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              {pagination_list.at(pagination_list.length - 1) !==
+                displayComment.total && (
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    size={"sm"}
+                    onClick={() => setCurr_page(curr_page + 1)}
+                  />
+                </PaginationItem>
+              )}
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
       <div
         className={`divider w-full mb-1 mt-0" + ${
           displayComment.total > 0 ? "" : "hidden"
         }`}
-      >
-      </div>
+      ></div>
       <div
         className={`flex flex-nowrap justify-end items-center gap-2 text-xs ${
           isLoading ? "cursor-wait text-gray-400" : "cursor-pointer"
         }`}
       >
-        {isLoading
-          ? (
-            <>
-              <span className="loading loading-dots loading-xs"></span>
-              <span>loading</span>
-            </>
-          )
-          : (
-            <span
-              onClick={() => setShow((prev) => !prev)}
-              className={displayComment.total > 0 ? "" : "hidden"}
-            >
-              {show ? "Hide most" : "Show all"} comments
-            </span>
-          )}
+        {isLoading ? (
+          <>
+            <span className="loading loading-dots loading-xs"></span>
+            <span>loading</span>
+          </>
+        ) : (
+          <span
+            onClick={() => setShow((prev) => !prev)}
+            className={displayComment.total > 0 ? "" : "hidden"}
+          >
+            {show ? "Hide most" : "Show all"} comments
+          </span>
+        )}
       </div>
     </div>
   );

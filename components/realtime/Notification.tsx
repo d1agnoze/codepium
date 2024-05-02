@@ -4,7 +4,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Bell, BellDot, Check} from "lucide-react";
+import { Bell, BellDot, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -94,6 +94,7 @@ const Notification = (props: Props) => {
       return prev.map((x) => ({ ...x, new: false }));
     });
   };
+
   const navigateTo = async (id: string | null) => {
     try {
       if (id == null) throw new Error("Cant find notification destination");
@@ -106,6 +107,10 @@ const Notification = (props: Props) => {
     } finally {
       nProgress.done();
     }
+  };
+
+  const goToCenter = () => {
+    router.push("/profile/notification/");
   };
 
   return (
@@ -168,7 +173,7 @@ const Notification = (props: Props) => {
             <Button
               variant={"ghost"}
               className="w-full h-8"
-              onClick={() => MarkAsRead()}
+              onClick={goToCenter}
             >
               Go to notification center
             </Button>
